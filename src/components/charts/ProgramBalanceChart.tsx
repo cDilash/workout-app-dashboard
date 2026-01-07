@@ -33,11 +33,11 @@ interface CustomTooltipProps extends TooltipProps<ValueType, NameType> {
 const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Week of {label}</p>
+      <div className="bg-black border border-gray-800 p-3 rounded shadow-2xl">
+        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Week of {label}</p>
         <div className="space-y-1">
           {payload.map((entry, index) => (
-            <p key={index} className="text-sm font-bold flex items-center gap-2" style={{ color: entry.color }}>
+            <p key={index} className="text-sm font-bold flex items-center gap-2 text-white">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
               {entry.name}: {(Number(entry.value) / 1000).toFixed(1)}k {unit}
             </p>
@@ -67,26 +67,26 @@ export function ProgramBalanceChart({ workouts, className }: ProgramBalanceChart
 
   if (data.length === 0) {
     return (
-      <div className={cn("bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center min-h-[300px]", className)}>
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 self-start">Program Balance</h3>
-        <p className="text-gray-400 text-sm">No data available</p>
+      <div className={cn("bw-card rounded-xl p-6 flex flex-col items-center justify-center min-h-[350px]", className)}>
+        <h3 className="text-lg font-bold text-white mb-6 self-start uppercase">Program Balance</h3>
+        <p className="text-gray-500 text-sm font-medium">No data available</p>
       </div>
     );
   }
 
   return (
-    <div className={cn("bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm", className)}>
+    <div className={cn("bw-card rounded-xl p-6", className)}>
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-1.5">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Program Balance</h3>
-          <InfoTooltip content="Shows how your total workload is distributed across movement categories (Push/Pull/Legs) or technical complexity (Compound/Isolation)." />
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-bold text-white uppercase tracking-tight">Program Balance</h3>
+          <InfoTooltip content="Shows how your total workload is distributed across movement categories." />
         </div>
-        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+        <div className="flex bg-gray-900 p-1 rounded-lg border border-gray-800">
           <button
             onClick={() => setMode('pattern')}
             className={cn(
-              "px-3 py-1 text-xs font-medium rounded-md transition-colors",
-              mode === 'pattern' ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+              "px-3 py-1 text-[10px] font-bold uppercase rounded transition-colors",
+              mode === 'pattern' ? "bg-white text-black" : "text-gray-500 hover:text-white"
             )}
           >
             Push/Pull
@@ -94,8 +94,8 @@ export function ProgramBalanceChart({ workouts, className }: ProgramBalanceChart
           <button
             onClick={() => setMode('type')}
             className={cn(
-              "px-3 py-1 text-xs font-medium rounded-md transition-colors",
-              mode === 'type' ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+              "px-3 py-1 text-[10px] font-bold uppercase rounded transition-colors",
+              mode === 'type' ? "bg-white text-black" : "text-gray-500 hover:text-white"
             )}
           >
             Comp/Iso
@@ -103,36 +103,37 @@ export function ProgramBalanceChart({ workouts, className }: ProgramBalanceChart
         </div>
       </div>
 
-      <div className="h-[300px] w-full">
+      <div className="h-[350px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" className="dark:opacity-10" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#262626" />
             <XAxis 
               dataKey="date" 
-              tick={{ fontSize: 12, fill: '#6b7280' }} 
+              tick={{ fontSize: 10, fill: '#525252', fontWeight: 'bold' }} 
               tickLine={false}
               axisLine={false}
               minTickGap={30}
+              tickMargin={10}
             />
             <YAxis 
               tickFormatter={(val) => `${(val/1000).toFixed(0)}k`}
-              tick={{ fontSize: 12, fill: '#6b7280' }} 
+              tick={{ fontSize: 10, fill: '#525252', fontWeight: 'bold' }} 
               tickLine={false}
               axisLine={false}
             />
-            <Tooltip content={<CustomTooltip unit={unitPreference} />} />
-            <Legend verticalAlign="top" height={36}/>
+            <Tooltip content={<CustomTooltip unit={unitPreference} />} cursor={{ fill: '#171717' }} />
+            <Legend verticalAlign="top" height={36} iconType="rect" />
             
             {mode === 'pattern' ? (
               <>
-                <Bar dataKey="push" name="Push" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="pull" name="Pull" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="legs" name="Legs" stackId="a" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="push" name="PUSH" stackId="a" fill="#ffffff" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="pull" name="PULL" stackId="a" fill="#a3a3a3" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="legs" name="LEGS" stackId="a" fill="#525252" radius={[2, 2, 0, 0]} />
               </>
             ) : (
               <>
-                <Bar dataKey="compound" name="Compound" stackId="a" fill="#8b5cf6" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="isolation" name="Isolation" stackId="a" fill="#ec4899" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="compound" name="COMPOUND" stackId="a" fill="#ffffff" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="isolation" name="ISOLATION" stackId="a" fill="#525252" radius={[2, 2, 0, 0]} />
               </>
             )}
           </BarChart>

@@ -8,8 +8,6 @@ export interface DashboardStats {
 }
 
 // Helper to filter valid sets (not deleted)
-// We generally count warmups for "Total Volume" but might exclude them for "Working Volume"
-// For this MVP, we will count everything that isn't deleted.
 function getValidSets(sets: WorkoutSet[]) {
   return sets.filter(s => !s.is_deleted);
 }
@@ -87,9 +85,7 @@ export function getMuscleDistribution(workouts: Workout[]) {
         exerciseVolume += set.weight_kg * set.reps;
       });
       
-      // Distribute volume evenly across muscle groups if multiple
       const splitVolume = exerciseVolume / (ex.muscle_groups.length || 1);
-      
       ex.muscle_groups.forEach(mg => {
         distribution[mg] = (distribution[mg] || 0) + splitVolume;
       });
@@ -103,11 +99,22 @@ export function getMuscleDistribution(workouts: Workout[]) {
 
 export function getHeatmapData(workouts: Workout[]) {
   const counts: Record<string, number> = {};
+  const dates = workouts.map(w => new Date(w.metadata.date));
+  
+  if (dates.length === 0) return { data: [], startDate: new Date(), endDate: new Date() };
+
   workouts.forEach((w) => {
     const date = new Date(w.metadata.date).toISOString().split("T")[0];
     counts[date] = (counts[date] || 0) + 1;
   });
-  return counts;
+
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(endDate.getDate() - 100);
+
+  const data = Object.entries(counts).map(([date, count]) => ({ date, count }));
+  
+  return { data, startDate, endDate };
 }
 
 export function calculate1RM(weight: number, reps: number): number {
@@ -155,64 +162,62 @@ export function getAvailableExercises(workouts: Workout[]) {
   return Array.from(exercises.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-// Analytics Metrics
-
 export function formatWeight(weightKg: number, unit: 'kg' | 'lbs'): number {
   if (unit === 'lbs') {
     return Math.round(weightKg * 2.20462);
   }
-  return weightKg;
-}
-
-export function getMovementPatternDistribution(workouts: Workout[]) {
-  const distribution: Record<string, number> = {};
-
-  workouts.forEach((w) => {
-    w.exercises.forEach((ex) => {
-      const pattern = ex.movement_pattern || 'Other';
-      let exerciseVolume = 0;
-      getValidSets(ex.sets).forEach((set) => {
-        exerciseVolume += set.weight_kg * set.reps;
-      });
-      
-      distribution[pattern] = (distribution[pattern] || 0) + exerciseVolume;
-    });
-  });
-
-  return Object.entries(distribution)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
+  return Math.round(weightKg * 10) / 10;
 }
 
 export function getFatigueData(workouts: Workout[]) {
-  // Returns { date, volume, rpe }
   const data: { date: string; volume: number; rpe: number }[] = [];
 
   workouts.forEach((w) => {
-    let sessionVolume = 0;
-    let totalRpe = 0;
-    let setWithRpeCount = 0;
+    const date = new Date(w.metadata.date);
+    const day = date.getDay() || 7; 
+    if (day !== 1) date.setHours(-24 * (day - 1));
+    const weekKey = date.toISOString().split("T")[0];
 
-    w.exercises.forEach((ex) => {
-      getValidSets(ex.sets).forEach((s) => {
-        sessionVolume += s.weight_kg * s.reps;
+    // Check if week exists
+    let entry = data.find(d => d.date === weekKey);
+    if (!entry) {
+      entry = { date: weekKey, volume: 0, rpe: 0 };
+      data.push(entry);
+    }
+
+    // This logic is simplified. Real fatigue is daily, but chart is weekly.
+    // We will sum volume and avg RPE for simplicity of the chart.
+    
+    // Actually, let's aggregate first.
+  });
+
+  // Re-implementation for proper aggregation
+  const weeklyAgg: Record<string, { vol: number; rpeSum: number; rpeCount: number }> = {};
+  
+  workouts.forEach(w => {
+    const date = new Date(w.metadata.date);
+    const day = date.getDay() || 7; 
+    if (day !== 1) date.setHours(-24 * (day - 1));
+    const weekKey = date.toISOString().split("T")[0];
+    
+    if (!weeklyAgg[weekKey]) weeklyAgg[weekKey] = { vol: 0, rpeSum: 0, rpeCount: 0 };
+    
+    w.exercises.forEach(ex => {
+      getValidSets(ex.sets).forEach(s => {
+        weeklyAgg[weekKey].vol += s.weight_kg * s.reps;
         if (s.rpe) {
-          totalRpe += s.rpe;
-          setWithRpeCount++;
+          weeklyAgg[weekKey].rpeSum += s.rpe;
+          weeklyAgg[weekKey].rpeCount++;
         }
       });
     });
-
-    if (sessionVolume > 0) {
-      data.push({
-        date: new Date(w.metadata.date).toISOString().split('T')[0],
-        volume: sessionVolume,
-        rpe: setWithRpeCount > 0 ? parseFloat((totalRpe / setWithRpeCount).toFixed(1)) : 0
-      });
-    }
   });
 
-  return data.sort((a, b) => a.date.localeCompare(b.date));
+  return Object.entries(weeklyAgg).map(([date, val]) => ({
+    date,
+    volume: val.vol,
+    rpe: val.rpeCount > 0 ? parseFloat((val.rpeSum / val.rpeCount).toFixed(1)) : 0
+  })).sort((a, b) => a.date.localeCompare(b.date));
 }
 
 export function getProgramBalance(workouts: Workout[]) {
@@ -234,7 +239,6 @@ export function getProgramBalance(workouts: Workout[]) {
 
       const pattern = (ex.movement_pattern || '').toLowerCase();
       
-      // Push vs Pull vs Legs Logic
       if (pattern.includes('squat') || pattern.includes('hinge') || pattern.includes('lunge') || pattern.includes('legs')) {
         weeklyBalance[weekKey].legs += vol;
       } else if (pattern.includes('push') || pattern.includes('press') || pattern.includes('chest') || pattern.includes('tricep') || pattern.includes('shoulder')) {
@@ -243,22 +247,14 @@ export function getProgramBalance(workouts: Workout[]) {
         weeklyBalance[weekKey].pull += vol;
       }
 
-      // Compound vs Isolation Logic
       let isCompound = false;
-
       if (ex.mechanics) {
-        // Priority: Explicit data from library
         isCompound = ex.mechanics === 'compound';
       } else {
-        // Fallback: Heuristic based on pattern
         isCompound = 
           pattern.includes('squat') || 
           pattern.includes('hinge') || 
           pattern.includes('lunge') || 
-          pattern.includes('horizontal push') || 
-          pattern.includes('vertical push') || 
-          pattern.includes('horizontal pull') || 
-          pattern.includes('vertical pull') ||
           pattern.includes('press') ||
           pattern.includes('row') ||
           pattern.includes('deadlift');
@@ -280,56 +276,33 @@ export function getProgramBalance(workouts: Workout[]) {
 
 export interface CoachingReport {
   period: string;
-  adherence: {
-    count: number;
-    rating: 'High' | 'Moderate' | 'Low';
-    message: string;
-  };
-  focus: {
-    muscle: string;
-    percentage: number;
-  };
-  volumeTrend: {
-    direction: 'up' | 'down' | 'stable';
-    percentChange: number;
-  };
+  adherence: { count: number; rating: 'High' | 'Moderate' | 'Low'; message: string; };
+  focus: { muscle: string; percentage: number; };
+  volumeTrend: { direction: 'up' | 'down' | 'stable'; percentChange: number; };
   recentPRs: number;
   insight: string;
 }
 
 export function generateCoachingReport(workouts: Workout[]): CoachingReport | null {
   if (workouts.length === 0) return null;
-
-  // Sort by date descending
   const sorted = [...workouts].sort((a, b) => new Date(b.metadata.date).getTime() - new Date(a.metadata.date).getTime());
   const lastWorkoutDate = new Date(sorted[0].metadata.date);
-  
-  // Define "Current Week" as last 7 days from the most recent workout
   const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
   const currentPeriodStart = new Date(lastWorkoutDate.getTime() - oneWeekMs);
   const previousPeriodStart = new Date(currentPeriodStart.getTime() - oneWeekMs);
-
   const currentWorkouts = sorted.filter(w => new Date(w.metadata.date) >= currentPeriodStart);
   const previousWorkouts = sorted.filter(w => {
     const d = new Date(w.metadata.date);
     return d >= previousPeriodStart && d < currentPeriodStart;
   });
 
-  // 1. Adherence
   const count = currentWorkouts.length;
   let rating: 'High' | 'Moderate' | 'Low' = 'Moderate';
   let message = "Consistency is key. Try to aim for 3+ sessions.";
-  if (count >= 4) {
-    rating = 'High';
-    message = "Excellent consistency! Keep this momentum going.";
-  } else if (count >= 2) {
-    rating = 'Moderate';
-    message = "Solid effort. Adding one more session could boost progress.";
-  } else {
-    rating = 'Low';
-  }
+  if (count >= 4) { rating = 'High'; message = "Excellent consistency!"; }
+  else if (count >= 2) { rating = 'Moderate'; message = "Solid effort."; }
+  else { rating = 'Low'; }
 
-  // 2. Focus Area
   const muscleVol: Record<string, number> = {};
   let currentTotalVol = 0;
   currentWorkouts.forEach(w => {
@@ -338,105 +311,67 @@ export function generateCoachingReport(workouts: Workout[]): CoachingReport | nu
       getValidSets(ex.sets).forEach(s => vol += s.weight_kg * s.reps);
       currentTotalVol += vol;
       const splitVol = vol / (ex.muscle_groups.length || 1);
-      ex.muscle_groups.forEach(mg => {
-        muscleVol[mg] = (muscleVol[mg] || 0) + splitVol;
-      });
+      ex.muscle_groups.forEach(mg => muscleVol[mg] = (muscleVol[mg] || 0) + splitVol);
     });
   });
-
   const topMuscle = Object.entries(muscleVol).sort((a, b) => b[1] - a[1])[0];
   const focusMuscle = topMuscle ? topMuscle[0] : "General";
   const focusPct = currentTotalVol > 0 ? (topMuscle ? topMuscle[1] / currentTotalVol : 0) : 0;
 
-  // 3. Volume Trend
   let previousTotalVol = 0;
   previousWorkouts.forEach(w => {
     w.exercises.forEach(ex => {
       getValidSets(ex.sets).forEach(s => previousTotalVol += s.weight_kg * s.reps);
     });
   });
-
   let direction: 'up' | 'down' | 'stable' = 'stable';
   let percentChange = 0;
   if (previousTotalVol > 0) {
     percentChange = ((currentTotalVol - previousTotalVol) / previousTotalVol) * 100;
     if (percentChange > 10) direction = 'up';
     else if (percentChange < -10) direction = 'down';
-  } else if (currentTotalVol > 0) {
-    direction = 'up';
-    percentChange = 100;
-  }
+  } else if (currentTotalVol > 0) { direction = 'up'; percentChange = 100; }
 
-  // 4. Recent PRs
   const allPRs = getPersonalRecords(workouts);
-  // Count PRs that happened in the current period
   const recentPRCount = allPRs.filter(pr => {
-    const weightDate = new Date(pr.maxWeightDate);
-    const e1rmDate = new Date(pr.maxE1RMDate);
-    const volDate = new Date(pr.maxVolumeDate);
-    return (weightDate >= currentPeriodStart) || (e1rmDate >= currentPeriodStart) || (volDate >= currentPeriodStart);
+    const d = new Date(pr.maxWeightDate);
+    return d >= currentPeriodStart;
   }).length;
 
-  // 5. Dynamic Insight
-  let insight = "";
-  if (recentPRCount > 2) {
-    insight = `You're on fire! Breaking ${recentPRCount} records this week indicates mostly optimal recovery.`;
-  } else if (direction === 'down' && count >= 3) {
-    insight = "Volume is down despite good attendance. This might be a healthy deload or intensity focus.";
-  } else if (rating === 'High' && direction === 'up') {
-    insight = "High volume and high frequency. Ensure you're eating and sleeping enough to support this load.";
-  } else {
-    insight = `Your primary focus this week was ${focusMuscle}. Consider balancing with antagonist work next week.`;
-  }
+  let insight = `Your primary focus this week was ${focusMuscle}.`;
+  if (recentPRCount > 2) insight = `You're on fire! Breaking ${recentPRCount} records this week.`;
 
-  return {
-    period: "Last 7 Days",
-    adherence: { count, rating, message },
-    focus: { muscle: focusMuscle, percentage: focusPct },
-    volumeTrend: { direction, percentChange },
-    recentPRs: recentPRCount,
-    insight
-  };
+  return { period: "Last 7 Days", adherence: { count, rating, message }, focus: { muscle: focusMuscle, percentage: focusPct }, volumeTrend: { direction, percentChange }, recentPRs: recentPRCount, insight };
 }
 
-export function getYearlySummary(workouts: Workout[]) {
+export function getYearInLiftStats(workouts: Workout[]) {
   if (workouts.length === 0) return null;
 
   let totalVolume = 0;
-  let totalReps = 0;
-  let totalSets = 0;
-  const muscleGroups: Record<string, number> = {};
-  const dayFrequency: Record<number, number> = {}; // 0-6
+  const exerciseVol: Record<string, number> = {};
+  const activeDaysSet = new Set<string>();
 
   workouts.forEach(w => {
-    const day = new Date(w.metadata.date).getDay();
-    dayFrequency[day] = (dayFrequency[day] || 0) + 1;
+    const dateStr = new Date(w.metadata.date).toISOString().split("T")[0];
+    activeDaysSet.add(dateStr);
 
     w.exercises.forEach(ex => {
-      ex.muscle_groups.forEach(mg => {
-        muscleGroups[mg] = (muscleGroups[mg] || 0) + 1;
-      });
-
+      let exVol = 0;
       getValidSets(ex.sets).forEach(s => {
-        totalVolume += s.weight_kg * s.reps;
-        totalReps += s.reps;
-        totalSets += 1;
+        exVol += s.weight_kg * s.reps;
       });
+      totalVolume += exVol;
+      exerciseVol[ex.name] = (exerciseVol[ex.name] || 0) + exVol;
     });
   });
 
-  const topMuscle = Object.entries(muscleGroups).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const topDayIndex = Object.entries(dayFrequency).sort((a, b) => b[1] - a[1])[0]?.[0];
-  const topDay = topDayIndex !== undefined ? dayNames[parseInt(topDayIndex)] : 'N/A';
-
+  const topExercise = Object.entries(exerciseVol).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+  
   return {
     totalWorkouts: workouts.length,
     totalVolume,
-    totalReps,
-    totalSets,
-    topMuscle,
-    topDay,
+    activeDays: activeDaysSet.size,
+    topExercise,
     year: new Date(workouts[0].metadata.date).getFullYear()
   };
 }
@@ -452,8 +387,7 @@ export function getRepRangeDistribution(workouts: Workout[]) {
   workouts.forEach((w) => {
     w.exercises.forEach((ex) => {
       getValidSets(ex.sets).forEach((set) => {
-        if (set.is_warmup) return; // Exclude warmups for training analysis
-
+        if (set.is_warmup) return;
         if (set.reps <= 5) ranges['1-5 (Strength)']++;
         else if (set.reps <= 12) ranges['6-12 (Hypertrophy)']++;
         else if (set.reps <= 20) ranges['13-20 (Endurance)']++;
@@ -461,14 +395,11 @@ export function getRepRangeDistribution(workouts: Workout[]) {
       });
     });
   });
-
   return Object.entries(ranges).map(([name, value]) => ({ name, value }));
 }
 
-export function getHardSetsAnalysis(workouts: Workout[]) {
-  // Hard set = RPE >= 7 or RIR <= 3
-  // Return hard sets vs easy sets per week
-  const weeklyAnalysis: Record<string, { hard: number; easy: number }> = {};
+export function getWeeklyHardSets(workouts: Workout[]) {
+  const weeklyAnalysis: Record<string, { hardSets: number }> = {};
 
   workouts.forEach((w) => {
     const date = new Date(w.metadata.date);
@@ -476,19 +407,13 @@ export function getHardSetsAnalysis(workouts: Workout[]) {
     if (day !== 1) date.setHours(-24 * (day - 1));
     const weekKey = date.toISOString().split("T")[0];
 
-    if (!weeklyAnalysis[weekKey]) weeklyAnalysis[weekKey] = { hard: 0, easy: 0 };
+    if (!weeklyAnalysis[weekKey]) weeklyAnalysis[weekKey] = { hardSets: 0 };
 
     w.exercises.forEach((ex) => {
       getValidSets(ex.sets).forEach((set) => {
         if (set.is_warmup) return;
-
         const isHard = (set.rpe !== undefined && set.rpe >= 7) || (set.rir !== undefined && set.rir <= 3);
-        
-        if (isHard) {
-          weeklyAnalysis[weekKey].hard++;
-        } else {
-          weeklyAnalysis[weekKey].easy++;
-        }
+        if (isHard) weeklyAnalysis[weekKey].hardSets++;
       });
     });
   });
@@ -514,7 +439,6 @@ export function getPersonalRecords(workouts: Workout[]): PRRecord[] {
 
   workouts.forEach((w) => {
     const date = new Date(w.metadata.date).toISOString().split("T")[0];
-
     w.exercises.forEach((ex) => {
       if (!records.has(ex.id)) {
         records.set(ex.id, {
@@ -528,34 +452,16 @@ export function getPersonalRecords(workouts: Workout[]): PRRecord[] {
           maxVolumeDate: '',
         });
       }
-
       const rec = records.get(ex.id)!;
       let sessionVolume = 0;
-
       getValidSets(ex.sets).forEach((set) => {
-        // Max Weight
-        if (set.weight_kg > rec.maxWeight) {
-          rec.maxWeight = set.weight_kg;
-          rec.maxWeightDate = date;
-        }
-
-        // Max Estimated 1RM
+        if (set.weight_kg > rec.maxWeight) { rec.maxWeight = set.weight_kg; rec.maxWeightDate = date; }
         const e1rm = calculate1RM(set.weight_kg, set.reps);
-        if (e1rm > rec.maxE1RM) {
-          rec.maxE1RM = e1rm;
-          rec.maxE1RMDate = date;
-        }
-
+        if (e1rm > rec.maxE1RM) { rec.maxE1RM = e1rm; rec.maxE1RMDate = date; }
         sessionVolume += set.weight_kg * set.reps;
       });
-
-      // Max Volume (Session)
-      if (sessionVolume > rec.maxVolume) {
-        rec.maxVolume = sessionVolume;
-        rec.maxVolumeDate = date;
-      }
+      if (sessionVolume > rec.maxVolume) { rec.maxVolume = sessionVolume; rec.maxVolumeDate = date; }
     });
   });
-
   return Array.from(records.values()).sort((a, b) => a.exerciseName.localeCompare(b.exerciseName));
 }

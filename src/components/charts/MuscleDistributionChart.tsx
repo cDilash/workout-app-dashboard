@@ -31,10 +31,10 @@ interface CustomTooltipProps extends TooltipProps<ValueType, NameType> {
 const CustomTooltip = ({ active, payload, unit }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-        <p className="text-sm font-bold text-gray-900 dark:text-white">{payload[0].payload.name}</p>
-        <p className="text-sm text-purple-600 dark:text-purple-400">
-          Volume: {payload[0].value && (Number(payload[0].value) / 1000).toFixed(1)}k {unit}
+      <div className="bg-black border border-gray-800 p-3 rounded shadow-2xl">
+        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">{payload[0].payload.name}</p>
+        <p className="text-sm font-bold text-white">
+          {(Number(payload[0].value) / 1000).toFixed(1)}k {unit}
         </p>
       </div>
     );
@@ -54,28 +54,27 @@ export function MuscleDistributionChart({ workouts, className }: MuscleDistribut
   }, [rawData, unitPreference]);
 
   if (data.length < 3) {
-    // Radar charts need at least 3 points to look good
     return (
-      <div className={cn("bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center min-h-[300px]", className)}>
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 self-start">Muscle Split</h3>
-        <p className="text-gray-400 text-sm">Need at least 3 muscle groups to show distribution</p>
+      <div className={cn("bw-card rounded-xl p-6 flex flex-col items-center justify-center min-h-[350px]", className)}>
+        <h3 className="text-lg font-bold text-white mb-6 self-start uppercase">Muscle Split</h3>
+        <p className="text-gray-500 text-sm font-medium">Need at least 3 muscle groups</p>
       </div>
     );
   }
 
   return (
-    <div className={cn("bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm", className)}>
-      <div className="flex items-center gap-1.5 mb-6">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Muscle Split ({unitPreference})</h3>
+    <div className={cn("bw-card rounded-xl p-6", className)}>
+      <div className="flex items-center gap-2 mb-6">
+        <h3 className="text-lg font-bold text-white uppercase tracking-tight">Muscle Split ({unitPreference})</h3>
         <InfoTooltip content="A radar visualization showing the relative focus on each muscle group. A balanced shape indicates a well-rounded program." />
       </div>
-      <div className="h-[300px] w-full">
+      <div className="h-[350px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
-            <PolarGrid stroke="#e5e7eb" className="dark:opacity-10" />
+            <PolarGrid stroke="#262626" />
             <PolarAngleAxis 
               dataKey="name" 
-              tick={{ fill: '#6b7280', fontSize: 12 }}
+              tick={{ fill: '#737373', fontSize: 10, fontWeight: 'bold' }}
             />
             <PolarRadiusAxis 
               angle={30} 
@@ -83,13 +82,14 @@ export function MuscleDistributionChart({ workouts, className }: MuscleDistribut
               tick={false}
               axisLine={false}
             />
-            <Tooltip content={<CustomTooltip unit={unitPreference} />} />
+            <Tooltip content={<CustomTooltip unit={unitPreference} />} cursor={false} />
             <Radar
               name="Volume"
               dataKey="value"
-              stroke="#8b5cf6"
-              fill="#8b5cf6"
-              fillOpacity={0.4}
+              stroke="#ffffff"
+              strokeWidth={2}
+              fill="#ffffff"
+              fillOpacity={0.1}
             />
           </RadarChart>
         </ResponsiveContainer>

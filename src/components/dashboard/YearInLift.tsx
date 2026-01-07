@@ -2,10 +2,10 @@
 
 import React, { useMemo } from 'react';
 import { Workout } from '@/lib/types';
-import { getYearlySummary, formatWeight } from '@/lib/stats';
+import { getYearInLiftStats } from '@/lib/stats';
 import { cn } from '@/lib/utils';
 import { useDashboardStore } from '@/stores/dashboard-store';
-import { Barbell, Calendar, Lightning, Trophy, ShareNetwork } from 'phosphor-react';
+import { Trophy, Barbell, CalendarCheck, Fire } from 'phosphor-react';
 
 interface YearInLiftProps {
   workouts: Workout[];
@@ -14,90 +14,59 @@ interface YearInLiftProps {
 
 export function YearInLift({ workouts, className }: YearInLiftProps) {
   const unitPreference = useDashboardStore((state) => state.unitPreference);
-  const summary = useMemo(() => getYearlySummary(workouts), [workouts]);
+  const stats = useMemo(() => getYearInLiftStats(workouts), [workouts]);
 
-  if (!summary) return null;
+  if (!stats) return null;
 
   return (
-    <div className={cn("bg-zinc-950 rounded-2xl p-8 text-white relative overflow-hidden", className)}>
-      {/* Background Decor */}
-      <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-blue-600/20 blur-[100px] rounded-full" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-purple-600/20 blur-[100px] rounded-full" />
+    <div className={cn("bw-card rounded-xl p-8 relative overflow-hidden", className)}>
+      <div className="absolute top-0 right-0 p-8 opacity-10">
+        <Trophy size={120} weight="fill" className="text-white" />
+      </div>
 
       <div className="relative z-10">
-        <div className="flex justify-between items-start mb-12">
+        <h3 className="text-3xl font-black text-white mb-1 tracking-tighter uppercase">Year In Lift</h3>
+        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-8">2025 Performance Review</p>
+
+        <div className="grid grid-cols-2 gap-8">
           <div>
-            <h2 className="text-4xl font-black tracking-tighter italic uppercase leading-none">
-              Year in <br />
-              <span className="text-blue-500 underline decoration-purple-500">Lift</span>
-            </h2>
-            <p className="text-zinc-500 font-bold mt-2 tracking-widest uppercase text-xs">{summary.year}</p>
+            <div className="flex items-center gap-2 mb-2">
+              <Barbell size={16} className="text-white" weight="fill" />
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Load</span>
+            </div>
+            <p className="text-2xl font-bold text-white">{(stats.totalVolume / 1000).toFixed(0)}k <span className="text-sm text-gray-500">{unitPreference}</span></p>
           </div>
-          <div className="bg-zinc-800 p-3 rounded-full hover:bg-zinc-700 cursor-pointer transition-colors">
-            <ShareNetwork size={20} weight="bold" />
+
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <CalendarCheck size={16} className="text-white" weight="fill" />
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Sessions</span>
+            </div>
+            <p className="text-2xl font-bold text-white">{stats.totalWorkouts}</p>
           </div>
-        </div>
 
-        <div className="space-y-8">
-          <StatRow 
-            icon={Barbell} 
-            label="Total Volume" 
-            value={`${(formatWeight(summary.totalVolume, unitPreference) / 1000).toFixed(1)}k`} 
-            unit={unitPreference}
-            color="text-blue-400"
-          />
-          <StatRow 
-            icon={Lightning} 
-            label="Workouts Completed" 
-            value={summary.totalWorkouts} 
-            color="text-yellow-400"
-          />
-          <StatRow 
-            icon={Trophy} 
-            label="Favorite Muscle" 
-            value={summary.topMuscle} 
-            color="text-purple-400"
-          />
-          <StatRow 
-            icon={Calendar} 
-            label="Most Active Day" 
-            value={summary.topDay} 
-            color="text-green-400"
-          />
-        </div>
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Fire size={16} className="text-white" weight="fill" />
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Active Days</span>
+            </div>
+            <p className="text-2xl font-bold text-white">{stats.activeDays}</p>
+          </div>
 
-        <div className="mt-12 pt-8 border-t border-zinc-800 flex justify-between items-center text-zinc-500 uppercase tracking-widest text-[10px] font-bold">
-          <span>Workout Dashboard</span>
-          <div className="flex gap-2">
-            <span>{summary.totalSets} Sets</span>
-            <span>•</span>
-            <span>{summary.totalReps} Reps</span>
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Trophy size={16} className="text-white" weight="fill" />
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Top Move</span>
+            </div>
+            <p className="text-xl font-bold text-white truncate">{stats.topExercise}</p>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-interface StatRowProps {
-  icon: React.ElementType;
-  label: string;
-  value: string | number;
-  unit?: string;
-  color: string;
-}
-
-function StatRow({ icon: Icon, label, value, unit, color }: StatRowProps) {
-  return (
-    <div className="flex items-center gap-4 group">
-      <div className={cn("p-3 rounded-xl bg-zinc-900 border border-zinc-800 transition-transform group-hover:scale-110", color)}>
-        <Icon size={24} weight="fill" />
-      </div>
-      <div>
-        <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold">{label}</p>
-        <p className="text-2xl font-black tabular-nums tracking-tight">
-          {value} {unit && <span className="text-sm font-medium text-zinc-600">{unit}</span>}
-        </p>
+        
+        <div className="mt-8 pt-6 border-t border-gray-800">
+           <p className="text-xs font-medium text-gray-400 italic">
+             &quot;Consistency is the bridge between goals and accomplishment.&quot;
+           </p>
+        </div>
       </div>
     </div>
   );
