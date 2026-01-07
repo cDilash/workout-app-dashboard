@@ -50,55 +50,74 @@ export function WorkoutHeatmap({ workouts, className }: WorkoutHeatmapProps) {
   };
 
   return (
-    <div className={cn("bw-card rounded-xl p-4 max-w-sm mx-auto", className)}>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-1.5">
-          <h3 className="text-sm font-bold text-white uppercase tracking-tight">Activity</h3>
-          <InfoTooltip content="Monthly training consistency. Light grey indicates completed sessions." />
+    <div className={cn("bw-card rounded-xl p-8 flex flex-col h-[480px]", className)}>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-bold text-white uppercase tracking-tight">Activity Calendar</h3>
+          <InfoTooltip content="Monthly training consistency. Muted grey indicates completed sessions." />
         </div>
         
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{monthName.slice(0,3)} {year}</span>
+        <div className="flex items-center gap-4">
+          <span className="text-xs font-black text-white uppercase tracking-[0.2em]">{monthName} {year}</span>
           <div className="flex gap-1">
-            <button onClick={() => changeMonth(-1)} className="p-0.5 hover:bg-white/10 rounded border border-gray-800 transition-colors">
-              <CaretLeft size={12} weight="bold" />
+            <button 
+              onClick={() => changeMonth(-1)} 
+              className="p-1.5 hover:bg-white hover:text-black rounded border border-gray-800 transition-all"
+            >
+              <CaretLeft size={16} weight="bold" />
             </button>
-            <button onClick={() => changeMonth(1)} className="p-0.5 hover:bg-white/10 rounded border border-gray-800 transition-colors">
-              <CaretRight size={12} weight="bold" />
+            <button 
+              onClick={() => changeMonth(1)} 
+              className="p-1.5 hover:bg-white hover:text-black rounded border border-gray-800 transition-all"
+            >
+              <CaretRight size={16} weight="bold" />
             </button>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
-        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
-          <div key={i} className="text-center text-[9px] font-black text-gray-700 mb-1">
-            {day}
-          </div>
-        ))}
-        
-        {calendarData.map((date, i) => {
-          if (!date) return <div key={`pad-${i}`} className="aspect-square" />;
-          
-          const dateStr = date.toISOString().split('T')[0];
-          const hasWorkout = workoutMap.has(dateStr);
-          const isToday = new Date().toISOString().split('T')[0] === dateStr;
-
-          return (
-            <div 
-              key={dateStr}
-              className={cn(
-                "aspect-square flex flex-col items-center justify-center rounded-md border text-[10px] font-bold transition-all",
-                hasWorkout 
-                  ? "bg-gray-300 text-black border-gray-300" 
-                  : "bg-transparent text-gray-600 border-gray-900",
-                isToday && !hasWorkout && "border-white/40 text-white"
-              )}
-            >
-              {date.getDate()}
+      <div className="flex-1 flex flex-col justify-center max-w-2xl mx-auto w-full">
+        <div className="grid grid-cols-7 gap-3">
+          {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((day, i) => (
+            <div key={i} className="text-center text-[10px] font-black text-gray-700 mb-2 uppercase tracking-widest">
+              {day}
             </div>
-          );
-        })}
+          ))}
+          
+          {calendarData.map((date, i) => {
+            if (!date) return <div key={`pad-${i}`} className="aspect-square" />;
+            
+            const dateStr = date.toISOString().split('T')[0];
+            const hasWorkout = workoutMap.has(dateStr);
+            const isToday = new Date().toISOString().split('T')[0] === dateStr;
+
+            return (
+              <div 
+                key={dateStr}
+                className={cn(
+                  "aspect-square flex flex-col items-center justify-center rounded-xl border text-xs font-bold transition-all duration-200",
+                  hasWorkout 
+                    ? "bg-gray-400 text-black border-gray-400 shadow-[0_0_20px_rgba(255,255,255,0.05)]" 
+                    : "bg-transparent text-gray-600 border-white/10 hover:border-white/30",
+                  isToday && !hasWorkout && "border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                )}
+              >
+                {date.getDate()}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      
+      <div className="mt-8 flex items-center gap-6 text-[10px] font-bold text-gray-700 uppercase tracking-widest border-t border-gray-900 pt-6">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-sm bg-gray-400" />
+          <span>Session Completed</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-sm border border-white/10" />
+          <span>Rest Day</span>
+        </div>
       </div>
     </div>
   );
