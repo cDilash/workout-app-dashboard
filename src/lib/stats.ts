@@ -305,6 +305,21 @@ export function getWeeklyHardSets(workouts: Workout[]) {
   return Object.entries(weekly).map(([date, counts]) => ({ date, ...counts })).sort((a,b)=>a.date.localeCompare(b.date));
 }
 
+export function getSweetSpotData(workouts: Workout[]) {
+  return workouts.map(w => {
+    let vol = 0, rpeSum = 0, rpeCount = 0;
+    getValidSets(w.exercises.flatMap(e => e.sets)).forEach(s => {
+      vol += s.weight_kg * s.reps;
+      if (s.rpe) { rpeSum += s.rpe; rpeCount++; }
+    });
+    return { 
+      volume: vol, 
+      rpe: rpeCount > 0 ? parseFloat((rpeSum / rpeCount).toFixed(1)) : 0, 
+      date: new Date(w.metadata.date).toISOString().split('T')[0] 
+    };
+  }).filter(d => d.volume > 0 && d.rpe > 0);
+}
+
 export function getGrowthZoneHeatmap(workouts: Workout[]) {
 
   // Volume Buckets: 0-5k, 5k-10k, 10k-15k, 15k-20k, 20k+
