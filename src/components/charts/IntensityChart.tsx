@@ -16,6 +16,7 @@ import { getHardSetsAnalysis } from '@/lib/stats';
 import { cn } from '@/lib/utils';
 import { TooltipProps } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 
 interface IntensityChartProps {
   workouts: Workout[];
@@ -60,7 +61,10 @@ export function IntensityChart({ workouts, className }: IntensityChartProps) {
 
   return (
     <div className={cn("bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm", className)}>
-      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Weekly Intensity (Hard Sets)</h3>
+      <div className="flex items-center gap-1.5 mb-6">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Weekly Intensity (Hard Sets)</h3>
+        <InfoTooltip content="Counts the number of sets performed at a high effort (RPE 7+ or RIR 3-). Hard sets are the primary driver of muscle growth." />
+      </div>
       <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
