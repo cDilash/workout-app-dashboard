@@ -42,7 +42,7 @@ export function PerformancePulse({ workouts, className }: PerformancePulseProps)
             {trending.length > 0 ? trending.slice(0, 4).map(item => (
               <PulseItem key={item.id} item={item} />
             )) : (
-              <p className="text-xs text-gray-600 font-bold uppercase italic tracking-widest py-4">No surge detected</p>
+              <p className="text-xs text-gray-500 font-bold uppercase italic tracking-widest py-4">No surge detected</p>
             )}
           </div>
         </div>
@@ -50,15 +50,15 @@ export function PerformancePulse({ workouts, className }: PerformancePulseProps)
         {/* Stalled Section */}
         <div className="p-6">
           <div className="flex items-center gap-2 mb-6">
-            <div className="w-2 h-2 rounded-full bg-gray-700" />
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Needs Focus</span>
+            <div className="w-2 h-2 rounded-full bg-gray-500" />
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Needs Focus</span>
           </div>
 
           <div className="space-y-4">
             {stalled.length > 0 ? stalled.slice(0, 4).map(item => (
               <PulseItem key={item.id} item={item} />
             )) : (
-              <p className="text-xs text-gray-600 font-bold uppercase italic tracking-widest py-4">All metrics climbing</p>
+              <p className="text-xs text-gray-500 font-bold uppercase italic tracking-widest py-4">All metrics climbing</p>
             )}
           </div>
         </div>
@@ -75,24 +75,24 @@ function PulseItem({ item }: { item: PerformanceInsight }) {
       <div className="flex items-center gap-3 min-w-0">
         <div className={cn(
           "w-8 h-8 rounded flex items-center justify-center shrink-0",
-          isTrending ? "bg-white text-black" : "bg-gray-900 text-gray-500"
+          isTrending ? "bg-white text-black" : "bg-gray-800 text-gray-400"
         )}>
           {isTrending ? <TrendUp size={16} weight="bold" /> : <WarningCircle size={16} weight="bold" />}
         </div>
         <div className="min-w-0">
           <p className="text-xs font-black text-white uppercase truncate tracking-tight">{item.name}</p>
-          <p className="text-[9px] font-bold text-gray-600 uppercase mt-0.5">Last: {item.lastPerformed}</p>
+          <p className="text-[9px] font-bold text-gray-400 uppercase mt-0.5 tracking-tighter">Last: {item.lastPerformed}</p>
         </div>
       </div>
       
       <div className="text-right ml-4">
         <p className={cn(
           "text-xs font-black tracking-tighter",
-          isTrending ? "text-white" : "text-gray-500"
+          isTrending ? "text-white" : "text-gray-400"
         )}>
           {isTrending ? `+${item.change.toFixed(1)}%` : 'STALLED'}
         </p>
-        <CaretRight size={10} className="text-gray-800 ml-auto mt-1" weight="bold" />
+        <CaretRight size={10} className="text-gray-700 ml-auto mt-1" weight="bold" />
       </div>
     </div>
   );

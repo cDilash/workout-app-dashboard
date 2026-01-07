@@ -22,7 +22,7 @@ export function StatCard({ title, value, icon: Icon, description, tooltip, class
       <div className="flex items-start justify-between relative z-10">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{title}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{title}</p>
             {tooltip && (
               <div 
                 className="relative cursor-help"

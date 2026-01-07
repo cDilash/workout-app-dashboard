@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  /* Strict Monochrome Palette */
+  /* Strict Monochrome Palette with improved contrast */
   --background: #000000;
   --foreground: #ffffff;
   
-  --card-bg: #0a0a0a;
+  --card-bg: #050505;
   --card-border: #262626;
   --card-hover: #171717;
   
   --primary: #ffffff;
   --primary-fg: #000000;
   
-  --muted: #737373;
+  --muted: #a3a3a3; /* Boosted from #737373 */
   --accent: #ffffff;
 }
 

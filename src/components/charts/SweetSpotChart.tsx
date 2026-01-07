@@ -34,11 +34,11 @@ const CustomTooltip = ({ active, payload, unit }: CustomTooltipProps) => {
     const data = payload[0].payload;
     return (
       <div className="bg-black border border-gray-800 p-4 rounded shadow-2xl">
-        <p className="text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-widest">{data.date}</p>
+        <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">{data.date}</p>
         <p className="text-sm font-black text-white mb-1">{data.name}</p>
         <div className="space-y-1">
-          <p className="text-xs text-gray-400">Volume: <span className="text-white">{(data.volume / 1000).toFixed(1)}k {unit}</span></p>
-          <p className="text-xs text-gray-400">Avg RPE: <span className="text-white">{data.rpe}</span></p>
+          <p className="text-xs text-gray-300">Volume: <span className="text-white font-bold">{(data.volume / 1000).toFixed(1)}k {unit}</span></p>
+          <p className="text-xs text-gray-300">Avg RPE: <span className="text-white font-bold">{data.rpe}</span></p>
         </div>
       </div>
     );
@@ -57,14 +57,13 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
     }));
   }, [rawData, unitPreference]);
 
-  // Calculate max volume for relative zones
   const maxVol = Math.max(...data.map(d => d.volume), 1);
 
   if (data.length < 5) {
     return (
       <div className={cn("bw-card rounded-xl p-6 flex flex-col items-center justify-center min-h-[400px]", className)}>
         <h3 className="text-lg font-bold text-white mb-6 self-start uppercase">Growth Zone</h3>
-        <p className="text-gray-500 text-sm font-medium">Need more data points to identify trend</p>
+        <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">Insufficient data points</p>
       </div>
     );
   }
@@ -85,25 +84,24 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
               dataKey="volume" 
               name="Volume" 
               unit={unitPreference} 
-              tick={{ fontSize: 10, fill: '#525252', fontWeight: 'bold' }}
+              tick={{ fontSize: 10, fill: '#71717a', fontWeight: 'bold' }}
               tickLine={false}
               axisLine={false}
-              label={{ value: 'TOTAL VOLUME', position: 'insideBottom', offset: -10, fill: '#525252', fontSize: 9, fontWeight: 'black' }}
+              label={{ value: 'TOTAL VOLUME', position: 'insideBottom', offset: -10, fill: '#71717a', fontSize: 9, fontWeight: 'black' }}
             />
             <YAxis 
               type="number" 
               dataKey="rpe" 
               name="Avg RPE" 
               domain={[0, 10]}
-              tick={{ fontSize: 10, fill: '#525252', fontWeight: 'bold' }}
+              tick={{ fontSize: 10, fill: '#71717a', fontWeight: 'bold' }}
               tickLine={false}
               axisLine={false}
-              label={{ value: 'AVG RPE', angle: -90, position: 'insideLeft', fill: '#525252', fontSize: 9, fontWeight: 'black' }}
+              label={{ value: 'AVG RPE', angle: -90, position: 'insideLeft', fill: '#71717a', fontSize: 9, fontWeight: 'black' }}
             />
             <ZAxis type="number" range={[50, 400]} />
-            <Tooltip content={<CustomTooltip unit={unitPreference} />} cursor={{ strokeDasharray: '3 3', stroke: '#525252' }} />
+            <Tooltip content={<CustomTooltip unit={unitPreference} />} cursor={{ strokeDasharray: '3 3', stroke: '#3f3f46' }} />
             
-            {/* Zones */}
             <ReferenceArea x1={maxVol * 0.6} x2={maxVol} y1={7} y2={9} fill="#ffffff" fillOpacity={0.03} label={{ value: 'GROWTH', position: 'center', fill: '#ffffff', fontSize: 10, fontWeight: 'black', opacity: 0.2 }} />
             <ReferenceArea x1={maxVol * 0.6} x2={maxVol} y1={9} y2={10} fill="#ffffff" fillOpacity={0.08} label={{ value: 'RISK', position: 'center', fill: '#ffffff', fontSize: 10, fontWeight: 'black', opacity: 0.3 }} />
             
@@ -113,19 +111,19 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
               fill="#ffffff" 
               line={false}
               shape="circle"
-              className="drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"
+              className="drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]"
             />
           </ScatterChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 text-[9px] font-bold text-gray-600 uppercase tracking-widest border-t border-gray-900 pt-6">
+      <div className="mt-6 grid grid-cols-2 gap-4 text-[9px] font-bold text-gray-500 uppercase tracking-widest border-t border-gray-900 pt-6">
         <div className="flex flex-col gap-1">
-          <span className="text-white">Growth Zone (Center)</span>
+          <span className="text-gray-300">Growth Zone (Center)</span>
           <span>High volume, sustainable effort.</span>
         </div>
         <div className="flex flex-col gap-1 text-right">
-          <span className="text-white">Risk Zone (Top Right)</span>
+          <span className="text-gray-300">Risk Zone (Top Right)</span>
           <span>Maximum volume AND effort.</span>
         </div>
       </div>
