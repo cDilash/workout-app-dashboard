@@ -6,9 +6,12 @@ import LZString from 'lz-string';
 interface DashboardState {
   data: AppExportData | null;
   unitPreference: 'kg' | 'lbs';
+  goals: Record<string, number>; // exerciseId -> target weight (in kg)
   isLoading: boolean;
   setData: (data: AppExportData) => void;
   setUnitPreference: (unit: 'kg' | 'lbs') => void;
+  setGoal: (exerciseId: string, weight: number) => void;
+  removeGoal: (exerciseId: string) => void;
   clearData: () => void;
 }
 
@@ -18,14 +21,8 @@ const compressedStorage: StateStorage = {
     const value = localStorage.getItem(name);
     if (!value) return null;
     try {
-      // Try decompressing; if null/empty (meaning it wasn't compressed or failed), return original
-      // Note: lz-string returns null on invalid input or empty string.
-      // However, for backward compatibility during dev, we might check if it's valid JSON first?
-      // Actually, standard approach: try decompress. If it looks like JSON, good.
-      // But LZString.decompressFromUTF16 returns null if it fails.
-      
       const decompressed = LZString.decompressFromUTF16(value);
-      return decompressed || value; // Fallback to raw value if decompression returns null (migration path)
+      return decompressed || value;
     } catch (e) {
       console.warn("Failed to decompress storage, returning raw value", e);
       return value;
@@ -49,17 +46,25 @@ export const useDashboardStore = create<DashboardState>()(
     (set) => ({
       data: null,
       unitPreference: 'kg',
+      goals: {},
       isLoading: false,
       setData: (data) => set({ data }),
       setUnitPreference: (unit) => set({ unitPreference: unit }),
-      clearData: () => set({ data: null }),
+      setGoal: (id, weight) => set((state) => ({ goals: { ...state.goals, [id]: weight } })),
+      removeGoal: (id) => set((state) => {
+        const newGoals = { ...state.goals };
+        delete newGoals[id];
+        return { goals: newGoals };
+      }),
+      clearData: () => set({ data: null, goals: {} }),
     }),
     {
       name: 'workout-dashboard-storage',
       storage: createJSONStorage(() => compressedStorage),
       partialize: (state) => ({ 
-        data: state.data,
-        unitPreference: state.unitPreference 
+        data: state.data, 
+        unitPreference: state.unitPreference,
+        goals: state.goals 
       }),
     }
   )
