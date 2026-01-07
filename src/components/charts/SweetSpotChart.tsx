@@ -51,20 +51,16 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
   const rawData = useMemo(() => getSweetSpotData(workouts), [workouts]);
 
   const data = useMemo(() => {
-    // Group by volume/rpe to apply jitter
     const coords: Record<string, number> = {};
     
     return rawData.map(d => {
       const vol = formatWeight(d.volume, unitPreference);
-      const roundedRpe = Math.round(d.rpe * 2) / 2; // Snap to 0.5 for grouping
+      const roundedRpe = Math.round(d.rpe * 2) / 2;
       const key = `${vol}-${roundedRpe}`;
       
-      // Increment count for this coordinate
       coords[key] = (coords[key] || 0) + 1;
       const count = coords[key];
       
-      // Apply jitter if this is a duplicate point
-      // We use a deterministic offset based on the count
       const jitterX = count > 1 ? (Math.sin(count) * (vol * 0.01)) : 0;
       const jitterY = count > 1 ? (Math.cos(count) * 0.1) : 0;
 
@@ -74,7 +70,7 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
         volume: vol + jitterX,
         rpe: d.rpe + jitterY,
       };
-    }).sort((a, b) => a.originalVolume - b.originalVolume);
+    }).sort((a, b) => a.volume - b.volume);
   }, [rawData, unitPreference]);
 
   const maxVol = Math.max(...data.map(d => d.originalVolume), 1);
@@ -92,19 +88,23 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
     <div className={cn("bw-card rounded-xl p-6 flex flex-col h-[520px]", className)}>
       <div className="flex items-center gap-2 mb-8">
         <h3 className="text-lg font-bold text-white uppercase tracking-tight">Growth Zone (Vol vs RPE)</h3>
-        <InfoTooltip content="Each dot is a workout. Use the slider at the bottom to zoom into specific volume ranges. Jitter applied to overlapping points." />
+        <InfoTooltip content="Each dot is a workout. Use the slider at the bottom to zoom into specific volume ranges." />
       </div>
 
       <div className="flex-1 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 20, right: 20, bottom: 0, left: 20 }}>
+          <ScatterChart 
+            data={data}
+            margin={{ top: 20, right: 20, bottom: 0, left: 20 }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="#171717" vertical={false} />
             <XAxis 
               type="number" 
               dataKey="volume" 
               name="Volume" 
               unit={unitPreference} 
-              domain={['dataMin', 'dataMax']}
+              domain={['auto', 'auto']}
+              allowDataOverflow={true}
               tick={{ fontSize: 10, fill: '#71717a', fontWeight: 'bold' }}
               tickLine={false}
               axisLine={false}
@@ -128,7 +128,6 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
             
             <Scatter 
               name="Workouts" 
-              data={data} 
               fill="#ffffff" 
               fillOpacity={0.4}
               line={false}
@@ -137,11 +136,11 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
             />
             <Brush 
               dataKey="volume" 
-              height={20} 
-              stroke="#262626" 
+              height={30} 
+              stroke="#525252" 
               fill="#000000"
               travellerWidth={10}
-              gap={10}
+              gap={1}
             />
           </ScatterChart>
         </ResponsiveContainer>
