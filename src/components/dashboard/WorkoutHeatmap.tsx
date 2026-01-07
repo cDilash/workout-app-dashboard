@@ -53,34 +53,34 @@ export function WorkoutHeatmap({ workouts, className }: WorkoutHeatmapProps) {
     <div className={cn("bw-card rounded-xl p-6 flex flex-col h-[480px] overflow-hidden", className)}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h3 className="text-base font-bold text-white uppercase tracking-tight">Activity Calendar</h3>
-          <InfoTooltip content="Monthly training consistency. Light grey indicates completed sessions." />
+          <h3 className="text-lg font-bold text-white uppercase tracking-tight">Activity Calendar</h3>
+          <InfoTooltip content="Monthly training consistency. Grey blocks indicate completed sessions." />
         </div>
         
         <div className="flex items-center gap-4">
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{monthName} {year}</span>
+          <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{monthName} {year}</span>
           <div className="flex gap-1">
             <button 
               onClick={() => changeMonth(-1)} 
-              className="p-1 hover:bg-white hover:text-black rounded border border-gray-800 transition-all"
+              className="p-1.5 hover:bg-white hover:text-black rounded-lg border border-gray-800 transition-all"
             >
-              <CaretLeft size={14} weight="bold" />
+              <CaretLeft size={16} weight="bold" />
             </button>
             <button 
               onClick={() => changeMonth(1)} 
-              className="p-1 hover:bg-white hover:text-black rounded border border-gray-800 transition-all"
+              className="p-1.5 hover:bg-white hover:text-black rounded-lg border border-gray-800 transition-all"
             >
-              <CaretRight size={14} weight="bold" />
+              <CaretRight size={16} weight="bold" />
             </button>
           </div>
         </div>
       </div>
 
       <div className="flex-1 flex flex-col justify-center">
-        <div className="w-full max-w-sm mx-auto">
-          <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+        <div className="w-full max-w-lg mx-auto">
+          <div className="grid grid-cols-7 gap-2 sm:gap-3">
             {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((day, i) => (
-              <div key={i} className="text-center text-[9px] font-black text-gray-700 mb-2 uppercase">
+              <div key={i} className="text-center text-[10px] font-black text-gray-700 mb-2 uppercase tracking-tighter">
                 {day}
               </div>
             ))}
@@ -96,11 +96,11 @@ export function WorkoutHeatmap({ workouts, className }: WorkoutHeatmapProps) {
                 <div 
                   key={dateStr}
                   className={cn(
-                    "aspect-square flex flex-col items-center justify-center rounded-lg border text-[10px] font-bold transition-all duration-200",
+                    "aspect-square flex flex-col items-center justify-center rounded-xl border text-xs font-bold transition-all duration-300",
                     hasWorkout 
-                      ? "bg-gray-300 text-black border-gray-300" 
-                      : "bg-white/5 text-gray-600 border-white/5 hover:border-white/20",
-                    isToday && !hasWorkout && "border-white text-white"
+                      ? "bg-gray-300 text-black border-gray-300 shadow-[0_0_15px_rgba(255,255,255,0.05)]" 
+                      : "bg-white/[0.07] text-gray-600 border-transparent hover:border-white/20",
+                    isToday && !hasWorkout && "border-white/60 text-white bg-white/10"
                   )}
                 >
                   {date.getDate()}
@@ -111,14 +111,19 @@ export function WorkoutHeatmap({ workouts, className }: WorkoutHeatmapProps) {
         </div>
       </div>
       
-      <div className="mt-4 flex items-center gap-4 text-[9px] font-bold text-gray-600 uppercase tracking-widest border-t border-gray-900 pt-4">
-        <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-sm bg-gray-300" />
-          <span>Session</span>
+      <div className="mt-4 flex items-center justify-between text-[10px] font-bold text-gray-600 uppercase tracking-widest border-t border-gray-900 pt-4">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-sm bg-gray-300" />
+            <span>Session</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-sm bg-white/[0.07]" />
+            <span>Rest</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-sm bg-white/5 border border-white/5" />
-          <span>Rest</span>
+        <div className="text-white font-black">
+          Total: {calendarData.filter(d => d && workoutMap.has(d.toISOString().split('T')[0])).length}
         </div>
       </div>
     </div>
