@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   ScatterChart,
   Scatter,
@@ -11,13 +11,13 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceArea,
-  Brush
 } from 'recharts';
 import { Workout } from '@/lib/types';
 import { getSweetSpotData, formatWeight } from '@/lib/stats';
 import { cn } from '@/lib/utils';
 import { useDashboardStore } from '@/stores/dashboard-store';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { ArrowsOut } from 'phosphor-react';
 
 interface SweetSpotChartProps {
   workouts: Workout[];
@@ -46,21 +46,20 @@ const CustomTooltip = ({ active, payload, unit }: CustomTooltipProps) => {
   return null;
 };
 
+type Domain = [number, number];
+
 export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
   const unitPreference = useDashboardStore((state) => state.unitPreference);
   const rawData = useMemo(() => getSweetSpotData(workouts), [workouts]);
 
-  const data = useMemo(() => {
+  const processedData = useMemo(() => {
     const coords: Record<string, number> = {};
-    
     return rawData.map(d => {
       const vol = formatWeight(d.volume, unitPreference);
       const roundedRpe = Math.round(d.rpe * 2) / 2;
       const key = `${vol}-${roundedRpe}`;
-      
       coords[key] = (coords[key] || 0) + 1;
       const count = coords[key];
-      
       const jitterX = count > 1 ? (Math.sin(count) * (vol * 0.01)) : 0;
       const jitterY = count > 1 ? (Math.cos(count) * 0.1) : 0;
 
@@ -73,9 +72,46 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
     }).sort((a, b) => a.volume - b.volume);
   }, [rawData, unitPreference]);
 
-  const maxVol = Math.max(...data.map(d => d.originalVolume), 1);
+  // Initial Bounds
+  const defaultX = useMemo<Domain>(() => {
+    const vols = processedData.map(d => d.volume);
+    return [Math.min(...vols) * 0.9, Math.max(...vols) * 1.1];
+  }, [processedData]);
 
-  if (data.length < 5) {
+  const defaultY: Domain = [0, 10.5];
+
+  const [xDomain, setXDomain] = useState<Domain | null>(null);
+  const [yDomain, setYDomain] = useState<Domain>(defaultY);
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
+    
+    setXDomain((prev) => {
+      const current = prev || defaultX;
+      const range = current[1] - current[0];
+      const mid = (current[1] + current[0]) / 2;
+      const newRange = range * zoomFactor;
+      setIsZoomed(true);
+      return [mid - newRange / 2, mid + newRange / 2];
+    });
+
+    setYDomain((prev) => {
+      const current = prev;
+      const range = current[1] - current[0];
+      const mid = (current[1] + current[0]) / 2;
+      const newRange = Math.min(10.5, range * zoomFactor);
+      return [Math.max(0, mid - newRange / 2), Math.min(10.5, mid + newRange / 2)];
+    });
+  }, [defaultX]);
+
+  const resetZoom = () => {
+    setXDomain(null);
+    setYDomain(defaultY);
+    setIsZoomed(false);
+  };
+
+  if (processedData.length < 5) {
     return (
       <div className={cn("bw-card rounded-xl p-6 flex flex-col items-center justify-center min-h-[450px]", className)}>
         <h3 className="text-lg font-bold text-white mb-6 self-start uppercase">Growth Zone</h3>
@@ -84,37 +120,52 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
     );
   }
 
+  const maxVol = defaultX[1];
+
   return (
-    <div className={cn("bw-card rounded-xl p-6 flex flex-col h-[520px]", className)}>
-      <div className="flex items-center gap-2 mb-8">
-        <h3 className="text-lg font-bold text-white uppercase tracking-tight">Growth Zone (Vol vs RPE)</h3>
-        <InfoTooltip content="Each dot is a workout. Use the slider at the bottom to zoom into specific volume ranges." />
+    <div className={cn("bw-card rounded-xl p-6 flex flex-col h-[520px] group", className)}>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-bold text-white uppercase tracking-tight">Growth Zone (Vol vs RPE)</h3>
+          <InfoTooltip content="Scroll or pinch to zoom. Points represent individual workouts." />
+        </div>
+        
+        {isZoomed && (
+          <button 
+            onClick={resetZoom}
+            className="flex items-center gap-1.5 px-3 py-1 bg-white text-black text-[10px] font-black uppercase rounded-full hover:bg-gray-200 transition-all animate-in fade-in zoom-in"
+          >
+            <ArrowsOut size={12} weight="bold" />
+            Reset Zoom
+          </button>
+        )}
       </div>
 
-      <div className="flex-1 w-full">
+      <div 
+        className="flex-1 w-full cursor-crosshair"
+        onWheel={handleWheel}
+      >
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart 
-            data={data}
-            margin={{ top: 20, right: 20, bottom: 0, left: 20 }}
-          >
+          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#171717" vertical={false} />
             <XAxis 
               type="number" 
               dataKey="volume" 
               name="Volume" 
               unit={unitPreference} 
-              domain={['auto', 'auto']}
-              allowDataOverflow={true}
+              domain={xDomain || ['auto', 'auto']}
+              allowDataOverflow
               tick={{ fontSize: 10, fill: '#71717a', fontWeight: 'bold' }}
               tickLine={false}
               axisLine={false}
-              label={{ value: 'TOTAL VOLUME', position: 'insideBottom', offset: -5, fill: '#525252', fontSize: 9, fontWeight: 'black' }}
+              label={{ value: 'TOTAL VOLUME', position: 'insideBottom', offset: -10, fill: '#525252', fontSize: 9, fontWeight: 'black' }}
             />
             <YAxis 
               type="number" 
               dataKey="rpe" 
               name="Avg RPE" 
-              domain={[0, 10]}
+              domain={yDomain}
+              allowDataOverflow
               tick={{ fontSize: 10, fill: '#71717a', fontWeight: 'bold' }}
               tickLine={false}
               axisLine={false}
@@ -128,32 +179,24 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
             
             <Scatter 
               name="Workouts" 
+              data={processedData} 
               fill="#ffffff" 
               fillOpacity={0.4}
               line={false}
               shape="circle"
               className="drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] hover:fill-opacity-100 transition-all duration-300"
             />
-            <Brush 
-              dataKey="volume" 
-              height={30} 
-              stroke="#525252" 
-              fill="#000000"
-              travellerWidth={10}
-              gap={1}
-            />
           </ScatterChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-8 grid grid-cols-2 gap-4 text-[9px] font-bold text-gray-600 uppercase tracking-widest border-t border-gray-900 pt-6">
-        <div className="flex flex-col gap-1">
+      <div className="mt-8 flex items-center justify-between text-[9px] font-bold text-gray-600 uppercase tracking-widest border-t border-gray-900 pt-6">
+        <div className="flex gap-4">
           <span className="text-gray-300">Growth Zone</span>
-          <span>Effective workload at high effort.</span>
+          <span>Scroll to Zoom</span>
         </div>
-        <div className="flex flex-col gap-1 text-right">
-          <span className="text-gray-300">Zoom Mode</span>
-          <span>Slide the bottom bar to filter range.</span>
+        <div className="text-right">
+          <span>{processedData.length} Data Points</span>
         </div>
       </div>
     </div>
