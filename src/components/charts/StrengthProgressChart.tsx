@@ -53,6 +53,8 @@ export function StrengthProgressChart({ workouts, className }: StrengthProgressC
   const unitPreference = useDashboardStore((state) => state.unitPreference);
   const exercises = useMemo(() => getAvailableExercises(workouts), [workouts]);
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>(exercises[0]?.id || '');
+  const [searchTerm, setSearch] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
 
   // Update selected ID if exercises change (e.g. new import) and current selection is invalid
   React.useEffect(() => {
@@ -61,6 +63,13 @@ export function StrengthProgressChart({ workouts, className }: StrengthProgressC
      }
   }, [exercises, selectedExerciseId]);
 
+  const filteredExercises = useMemo(() => {
+    return exercises.filter(ex => 
+      ex.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [exercises, searchTerm]);
+
+  const selectedName = exercises.find(e => e.id === selectedExerciseId)?.name || 'Select Exercise';
 
   const rawData = useMemo(() => {
     if (!selectedExerciseId) return [];
@@ -87,17 +96,54 @@ export function StrengthProgressChart({ workouts, className }: StrengthProgressC
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">Strength Progression</h3>
           <InfoTooltip content="Estimated 1RM (Rep Max) is a theoretical calculation of the maximum weight you could lift for a single rep, based on your best performance each day." />
         </div>
-        <select
-          value={selectedExerciseId}
-          onChange={(e) => setSelectedExerciseId(e.target.value)}
-          className="block w-full sm:w-64 rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2"
-        >
-          {exercises.map((ex) => (
-            <option key={ex.id} value={ex.id}>
-              {ex.name}
-            </option>
-          ))}
-        </select>
+        
+        {/* Searchable Select */}
+        <div className="relative w-full sm:w-64 z-20">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-2 px-3 text-left text-sm font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 flex justify-between items-center"
+          >
+            <span className="truncate">{selectedName}</span>
+            <span className="ml-2 text-gray-400">▼</span>
+          </button>
+
+          {isOpen && (
+            <div className="absolute mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-hidden flex flex-col">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearch(e.target.value)}
+                className="p-2 border-b border-gray-100 dark:border-gray-700 bg-transparent text-sm focus:outline-none dark:text-white"
+                autoFocus
+              />
+              <div className="overflow-y-auto flex-1">
+                {filteredExercises.map((ex) => (
+                  <button
+                    key={ex.id}
+                    onClick={() => {
+                      setSelectedExerciseId(ex.id);
+                      setIsOpen(false);
+                      setSearch('');
+                    }}
+                    className={cn(
+                      "w-full text-left px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors",
+                      ex.id === selectedExerciseId ? "bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-medium" : "text-gray-700 dark:text-gray-300"
+                    )}
+                  >
+                    {ex.name}
+                  </button>
+                ))}
+                {filteredExercises.length === 0 && (
+                  <div className="p-3 text-sm text-gray-400 text-center">No exercises found</div>
+                )}
+              </div>
+            </div>
+          )}
+          {isOpen && (
+            <div className="fixed inset-0 z-[-1]" onClick={() => setIsOpen(false)} />
+          )}
+        </div>
       </div>
 
       <div className="h-[350px] w-full">
