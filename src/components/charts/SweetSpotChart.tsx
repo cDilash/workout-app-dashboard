@@ -10,7 +10,8 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceArea
+  ReferenceArea,
+  Brush
 } from 'recharts';
 import { Workout } from '@/lib/types';
 import { getSweetSpotData, formatWeight } from '@/lib/stats';
@@ -25,7 +26,7 @@ interface SweetSpotChartProps {
 
 interface CustomTooltipProps {
   active?: boolean;
-  payload?: { payload: { date: string; name: string; volume: number; rpe: number } }[];
+  payload?: { payload: { date: string; name: string; volume: number; rpe: number; originalVolume: number } }[];
   unit: string;
 }
 
@@ -35,10 +36,9 @@ const CustomTooltip = ({ active, payload, unit }: CustomTooltipProps) => {
     return (
       <div className="bg-black border border-gray-800 p-4 rounded shadow-2xl">
         <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">{data.date}</p>
-        <p className="text-sm font-black text-white mb-1">{data.name}</p>
         <div className="space-y-1">
-          <p className="text-xs text-gray-300">Volume: <span className="text-white font-bold">{(data.volume / 1000).toFixed(1)}k {unit}</span></p>
-          <p className="text-xs text-gray-300">Avg RPE: <span className="text-white font-bold">{data.rpe}</span></p>
+          <p className="text-xs text-gray-300">Volume: <span className="text-white font-bold">{(data.originalVolume / 1000).toFixed(1)}k {unit}</span></p>
+          <p className="text-xs text-gray-300">Avg RPE: <span className="text-white font-bold">{data.rpe.toFixed(1)}</span></p>
         </div>
       </div>
     );
@@ -51,17 +51,37 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
   const rawData = useMemo(() => getSweetSpotData(workouts), [workouts]);
 
   const data = useMemo(() => {
-    return rawData.map(d => ({
-      ...d,
-      volume: formatWeight(d.volume, unitPreference)
-    }));
+    // Group by volume/rpe to apply jitter
+    const coords: Record<string, number> = {};
+    
+    return rawData.map(d => {
+      const vol = formatWeight(d.volume, unitPreference);
+      const roundedRpe = Math.round(d.rpe * 2) / 2; // Snap to 0.5 for grouping
+      const key = `${vol}-${roundedRpe}`;
+      
+      // Increment count for this coordinate
+      coords[key] = (coords[key] || 0) + 1;
+      const count = coords[key];
+      
+      // Apply jitter if this is a duplicate point
+      // We use a deterministic offset based on the count
+      const jitterX = count > 1 ? (Math.sin(count) * (vol * 0.01)) : 0;
+      const jitterY = count > 1 ? (Math.cos(count) * 0.1) : 0;
+
+      return {
+        ...d,
+        originalVolume: vol,
+        volume: vol + jitterX,
+        rpe: d.rpe + jitterY,
+      };
+    }).sort((a, b) => a.originalVolume - b.originalVolume);
   }, [rawData, unitPreference]);
 
-  const maxVol = Math.max(...data.map(d => d.volume), 1);
+  const maxVol = Math.max(...data.map(d => d.originalVolume), 1);
 
   if (data.length < 5) {
     return (
-      <div className={cn("bw-card rounded-xl p-6 flex flex-col items-center justify-center min-h-[400px]", className)}>
+      <div className={cn("bw-card rounded-xl p-6 flex flex-col items-center justify-center min-h-[450px]", className)}>
         <h3 className="text-lg font-bold text-white mb-6 self-start uppercase">Growth Zone</h3>
         <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">Insufficient data points</p>
       </div>
@@ -69,25 +89,26 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
   }
 
   return (
-    <div className={cn("bw-card rounded-xl p-6", className)}>
+    <div className={cn("bw-card rounded-xl p-6 flex flex-col h-[520px]", className)}>
       <div className="flex items-center gap-2 mb-8">
         <h3 className="text-lg font-bold text-white uppercase tracking-tight">Growth Zone (Vol vs RPE)</h3>
-        <InfoTooltip content="Plots every workout. Your 'Growth Zone' is the area where you perform high volume at a moderate-high effort (RPE 7-9). Points in the top-right corner indicate potential overreaching." />
+        <InfoTooltip content="Each dot is a workout. Use the slider at the bottom to zoom into specific volume ranges. Jitter applied to overlapping points." />
       </div>
 
-      <div className="h-[400px] w-full">
+      <div className="flex-1 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#171717" />
+          <ScatterChart margin={{ top: 20, right: 20, bottom: 0, left: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#171717" vertical={false} />
             <XAxis 
               type="number" 
               dataKey="volume" 
               name="Volume" 
               unit={unitPreference} 
+              domain={['dataMin', 'dataMax']}
               tick={{ fontSize: 10, fill: '#71717a', fontWeight: 'bold' }}
               tickLine={false}
               axisLine={false}
-              label={{ value: 'TOTAL VOLUME', position: 'insideBottom', offset: -10, fill: '#71717a', fontSize: 9, fontWeight: 'black' }}
+              label={{ value: 'TOTAL VOLUME', position: 'insideBottom', offset: -5, fill: '#525252', fontSize: 9, fontWeight: 'black' }}
             />
             <YAxis 
               type="number" 
@@ -97,34 +118,43 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
               tick={{ fontSize: 10, fill: '#71717a', fontWeight: 'bold' }}
               tickLine={false}
               axisLine={false}
-              label={{ value: 'AVG RPE', angle: -90, position: 'insideLeft', fill: '#71717a', fontSize: 9, fontWeight: 'black' }}
+              label={{ value: 'AVG RPE', angle: -90, position: 'insideLeft', fill: '#525252', fontSize: 9, fontWeight: 'black' }}
             />
-            <ZAxis type="number" range={[50, 400]} />
+            <ZAxis type="number" range={[60, 60]} />
             <Tooltip content={<CustomTooltip unit={unitPreference} />} cursor={{ strokeDasharray: '3 3', stroke: '#3f3f46' }} />
             
-            <ReferenceArea x1={maxVol * 0.6} x2={maxVol} y1={7} y2={9} fill="#ffffff" fillOpacity={0.03} label={{ value: 'GROWTH', position: 'center', fill: '#ffffff', fontSize: 10, fontWeight: 'black', opacity: 0.2 }} />
-            <ReferenceArea x1={maxVol * 0.6} x2={maxVol} y1={9} y2={10} fill="#ffffff" fillOpacity={0.08} label={{ value: 'RISK', position: 'center', fill: '#ffffff', fontSize: 10, fontWeight: 'black', opacity: 0.3 }} />
+            <ReferenceArea x1={maxVol * 0.6} x2={maxVol} y1={7} y2={9} fill="#ffffff" fillOpacity={0.02} label={{ value: 'GROWTH', position: 'center', fill: '#ffffff', fontSize: 10, fontWeight: 'black', opacity: 0.1 }} />
+            <ReferenceArea x1={maxVol * 0.6} x2={maxVol} y1={9} y2={10} fill="#ffffff" fillOpacity={0.05} label={{ value: 'RISK', position: 'center', fill: '#ffffff', fontSize: 10, fontWeight: 'black', opacity: 0.2 }} />
             
             <Scatter 
               name="Workouts" 
               data={data} 
               fill="#ffffff" 
+              fillOpacity={0.4}
               line={false}
               shape="circle"
-              className="drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]"
+              className="drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] hover:fill-opacity-100 transition-all duration-300"
+            />
+            <Brush 
+              dataKey="volume" 
+              height={20} 
+              stroke="#262626" 
+              fill="#000000"
+              travellerWidth={10}
+              gap={10}
             />
           </ScatterChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 text-[9px] font-bold text-gray-500 uppercase tracking-widest border-t border-gray-900 pt-6">
+      <div className="mt-8 grid grid-cols-2 gap-4 text-[9px] font-bold text-gray-600 uppercase tracking-widest border-t border-gray-900 pt-6">
         <div className="flex flex-col gap-1">
-          <span className="text-gray-300">Growth Zone (Center)</span>
-          <span>High volume, sustainable effort.</span>
+          <span className="text-gray-300">Growth Zone</span>
+          <span>Effective workload at high effort.</span>
         </div>
         <div className="flex flex-col gap-1 text-right">
-          <span className="text-gray-300">Risk Zone (Top Right)</span>
-          <span>Maximum volume AND effort.</span>
+          <span className="text-gray-300">Zoom Mode</span>
+          <span>Slide the bottom bar to filter range.</span>
         </div>
       </div>
     </div>
