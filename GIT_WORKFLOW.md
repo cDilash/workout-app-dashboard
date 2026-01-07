@@ -5,7 +5,7 @@ After every major update, feature implementation, or architectural change, ensur
 
 1. **Verify Build**: Run `npm run build` or the equivalent build command to ensure no regressions.
 2. **Lint & Type Check**: Run `npm run lint` and `tsc` to maintain code quality.
-3. **Update Documentation**: If the update changed how the app works or added a new feature, update `GEMINI.md` or `CLAUDE.md`.
+3. **Update Documentation**: If the update changed how the app works, data architecture, or analytical scope, update `GEMINI.md`, `DATA_HANDLING.md`, or `ANALYTICS_CAPABILITIES.md`.
 4. **Commit Changes**: Use descriptive commit messages (e.g., `feat: add strength progression chart`, `fix: parser logic for volume calculations`).
 5. **Push to GitHub**: 
    ```bash
