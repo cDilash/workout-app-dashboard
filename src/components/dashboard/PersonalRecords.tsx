@@ -37,48 +37,45 @@ export function PersonalRecords({ workouts, className }: PersonalRecordsProps) {
   if (records.length === 0) return null;
 
   return (
-    <div className={cn("bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden", className)}>
-      <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <Trophy size={20} className="text-yellow-500" weight="duotone" />
-          Personal Records ({unitPreference})
+    <div className={cn("bw-card rounded-xl flex flex-col", className)}>
+      <div className="p-6 border-b border-gray-800 flex items-center justify-between">
+        <h3 className="text-lg font-bold text-white flex items-center gap-2 uppercase tracking-tight">
+          <Trophy size={20} className="text-white" weight="fill" />
+          Personal Records
         </h3>
-        <span className="text-xs text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-full">
-          Based on import history
+        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-gray-900 px-2 py-1 rounded border border-gray-800">
+          ALL TIME
         </span>
       </div>
       
-      <div className="max-h-[500px] overflow-y-auto p-0 divide-y divide-gray-100 dark:divide-gray-800">
+      <div className="flex-1 overflow-y-auto custom-scrollbar divide-y divide-gray-900">
         {records.map((rec) => (
-          <div key={rec.exerciseId} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-            <h4 className="font-medium text-gray-900 dark:text-white mb-3 flex items-center justify-between">
+          <div key={rec.exerciseId} className="p-5 hover:bg-white/5 transition-colors">
+            <h4 className="text-sm font-black text-white uppercase tracking-wider mb-4 flex items-center justify-between">
               {rec.exerciseName}
             </h4>
             
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-3">
               <PRMetric 
-                label="Max Weight" 
+                label="Weight" 
                 value={`${rec.maxWeight}${unitPreference}`} 
                 date={rec.maxWeightDate} 
                 isNew={isNew(rec.maxWeightDate)}
                 icon={Crown}
-                color="text-amber-500"
               />
               <PRMetric 
-                label="Best e1RM" 
+                label="e1RM" 
                 value={`${rec.maxE1RM}${unitPreference}`} 
                 date={rec.maxE1RMDate} 
                 isNew={isNew(rec.maxE1RMDate)}
                 icon={Medal}
-                color="text-blue-500"
               />
                <PRMetric 
-                label="Max Vol" 
+                label="Volume" 
                 value={`${(rec.maxVolume / 1000).toFixed(1)}k`} 
                 date={rec.maxVolumeDate} 
                 isNew={isNew(rec.maxVolumeDate)}
                 icon={Trophy}
-                color="text-purple-500"
               />
             </div>
           </div>
@@ -94,28 +91,29 @@ function PRMetric({
   date, 
   isNew, 
   icon: Icon,
-  color
 }: { 
   label: string; 
   value: string; 
   date: string; 
   isNew: boolean; 
   icon: React.ElementType;
-  color: string;
 }) {
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2.5 flex flex-col items-center text-center relative overflow-hidden group">
+    <div className={cn(
+      "bg-black border rounded-lg p-3 flex flex-col items-center text-center relative overflow-hidden transition-all",
+      isNew ? "border-white" : "border-gray-900"
+    )}>
       {isNew && (
-        <div className="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-bl-md z-10">
-          NEW!
+        <div className="absolute top-0 right-0 bg-white text-black text-[8px] font-black px-1.5 py-0.5 rounded-bl uppercase tracking-tighter">
+          NEW
         </div>
       )}
-      <div className={cn("mb-1 p-1.5 rounded-full bg-white dark:bg-gray-700 shadow-sm", color)}>
-        <Icon size={16} weight="duotone" />
+      <div className="mb-2 text-gray-500">
+        <Icon size={16} weight="fill" className={cn(isNew && "text-white")} />
       </div>
-      <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{label}</p>
-      <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">{value}</p>
-      <p className="text-[10px] text-gray-400 mt-1 opacity-60 group-hover:opacity-100 transition-opacity">{date}</p>
+      <p className="text-[10px] font-bold text-gray-600 uppercase tracking-tighter mb-1">{label}</p>
+      <p className="text-sm font-black text-white leading-tight">{value}</p>
+      <p className="text-[9px] font-bold text-gray-700 mt-1 uppercase tracking-tighter">{date}</p>
     </div>
   );
 }
