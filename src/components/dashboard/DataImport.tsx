@@ -58,14 +58,14 @@ export function DataImport() {
   }, [handleFile]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] w-full max-w-2xl px-4 animate-in fade-in zoom-in duration-700">
+    <div className="flex flex-col items-center justify-center min-h-[70vh] w-full max-w-xl px-4 animate-in fade-in zoom-in duration-500">
       {/* Logo Area */}
       <div className="flex flex-col items-center mb-12">
-        <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-400 rounded-3xl flex items-center justify-center text-white shadow-2xl shadow-blue-500/20 mb-6">
-          <Barbell size={40} weight="fill" />
+        <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center text-black mb-6">
+          <Barbell size={32} weight="fill" />
         </div>
-        <h1 className="text-4xl font-bold text-white tracking-tight mb-2">Workout<span className="text-blue-500 font-light italic ml-1">Dashboard</span></h1>
-        <p className="text-gray-500 text-sm font-medium uppercase tracking-[0.2em]">Data Analytics Hub</p>
+        <h1 className="text-3xl font-bold text-white tracking-tight mb-2">WORKOUT<span className="text-gray-500 font-normal ml-2">DASHBOARD</span></h1>
+        <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.3em]">Analytics Hub</p>
       </div>
 
       <div
@@ -73,11 +73,11 @@ export function DataImport() {
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         className={cn(
-          "glass-card glass-card-hover w-full rounded-[2.5rem] p-12 transition-all duration-500 flex flex-col items-center justify-center cursor-pointer relative overflow-hidden",
+          "w-full rounded-xl border border-dashed transition-all duration-300 flex flex-col items-center justify-center cursor-pointer p-12",
           isDragging 
-            ? "border-blue-500/50 bg-blue-500/5 ring-4 ring-blue-500/10 scale-[1.02]" 
-            : "border-white/10",
-          error ? "border-red-500/50 bg-red-500/5" : ""
+            ? "border-white bg-white/10" 
+            : "border-gray-800 hover:border-gray-600 bg-transparent",
+          error ? "border-red-500" : ""
         )}
       >
         <input
@@ -90,48 +90,34 @@ export function DataImport() {
         
         <label htmlFor="file-upload" className="flex flex-col items-center cursor-pointer w-full relative z-10">
           <div className={cn(
-            "w-24 h-24 rounded-full flex items-center justify-center mb-6 transition-all duration-300",
-            isDragging 
-              ? "bg-blue-600 text-white shadow-[0_0_40px_rgba(37,99,235,0.4)]" 
-              : "glass-card bg-white/5 text-gray-400"
+            "mb-6 transition-colors duration-300",
+            isDragging ? "text-white" : "text-gray-600"
           )}>
-            <UploadSimple size={40} weight={isDragging ? "bold" : "light"} />
+            <UploadSimple size={48} weight="light" />
           </div>
           
-          <p className="text-2xl font-bold text-white mb-2">
-            Import Training History
+          <p className="text-lg font-bold text-white mb-2">
+            Import Data
           </p>
-          <p className="text-gray-500 font-medium mb-8">
-            Drag and drop your JSON export or <span className="text-blue-400 underline decoration-blue-400/30 underline-offset-4">browse files</span>
+          <p className="text-gray-500 text-sm mb-8">
+            JSON Export V1.0 / V2.0
           </p>
           
           <div className="flex items-center gap-4">
-             <div className="flex items-center text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-white/5 px-4 py-2 rounded-xl border border-white/5">
-                <FileText size={14} className="mr-2 text-blue-500" />
-                <span>Format: JSON (V1/V2)</span>
-             </div>
-             <div className="flex items-center text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-white/5 px-4 py-2 rounded-xl border border-white/5">
-                <Barbell size={14} className="mr-2 text-blue-500" />
-                <span>Privacy: Client-Side Only</span>
+             <div className="flex items-center text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-gray-900 px-4 py-2 rounded border border-gray-800">
+                <FileText size={14} className="mr-2 text-white" />
+                <span>Client-Side Only</span>
              </div>
           </div>
         </label>
-
-        {/* Decorative Background Glows */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px] pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-purple-600/10 rounded-full blur-[80px] pointer-events-none" />
       </div>
 
       {error && (
-        <div className="mt-8 p-4 glass-card bg-red-500/10 border-red-500/20 text-red-400 rounded-2xl flex items-center text-sm font-medium animate-in slide-in-from-bottom-2">
+        <div className="mt-8 p-4 bg-red-900/20 border border-red-900 text-red-400 rounded flex items-center text-sm font-medium w-full justify-center">
           <Warning size={20} weight="fill" className="mr-3 flex-shrink-0" />
           {error}
         </div>
       )}
-      
-      <p className="mt-12 text-gray-600 text-[10px] font-bold uppercase tracking-[0.3em]">
-        Secured by local encryption
-      </p>
     </div>
   );
 }

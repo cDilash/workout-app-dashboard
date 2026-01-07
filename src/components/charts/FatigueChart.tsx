@@ -37,12 +37,12 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
     const rpeData = payload.find(p => p.dataKey === 'rpe');
 
     return (
-      <div className="glass-card bg-black/80 p-4 rounded-xl border-white/10 shadow-xl backdrop-blur-md">
-        <p className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Week of {label}</p>
+      <div className="bg-black border border-gray-800 p-4 rounded shadow-2xl">
+        <p className="text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-wider">Week of {label}</p>
         <div className="space-y-2">
           {volumeData && (
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+              <div className="w-2 h-2 rounded-full bg-white" />
               <p className="text-sm font-bold text-white">
                 {(Number(volumeData.value) / 1000).toFixed(1)}k <span className="text-gray-500 text-xs">{unit}</span>
               </p>
@@ -50,7 +50,7 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
           )}
           {rpeData && (
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
+              <div className="w-2 h-2 rounded-full bg-gray-500" />
               <p className="text-sm font-bold text-white">
                 RPE {rpeData.value}
               </p>
@@ -76,7 +76,7 @@ export function FatigueChart({ workouts, className }: FatigueChartProps) {
 
   if (data.length === 0) {
     return (
-      <div className={cn("glass-card rounded-3xl p-6 flex flex-col items-center justify-center min-h-[350px]", className)}>
+      <div className={cn("bw-card rounded-xl p-6 flex flex-col items-center justify-center min-h-[350px]", className)}>
         <h3 className="text-lg font-bold text-white mb-6 self-start">Fatigue Management</h3>
         <p className="text-gray-500 text-sm">No data available</p>
       </div>
@@ -84,9 +84,9 @@ export function FatigueChart({ workouts, className }: FatigueChartProps) {
   }
 
   return (
-    <div className={cn("glass-card rounded-3xl p-6", className)}>
+    <div className={cn("bw-card rounded-xl p-6", className)}>
       <div className="flex items-center gap-2 mb-8">
-        <h3 className="text-lg font-bold text-white tracking-tight">Fatigue Management</h3>
+        <h3 className="text-lg font-bold text-white tracking-tight uppercase">Fatigue Management</h3>
         <InfoTooltip content="Compares weekly Volume (Training Stress) with Average RPE (Strain). If RPE rises while Volume falls, you may be overreaching." />
       </div>
       <div className="h-[350px] w-full">
@@ -94,14 +94,14 @@ export function FatigueChart({ workouts, className }: FatigueChartProps) {
           <ComposedChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <defs>
               <linearGradient id="volGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#ffffff" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#ffffff" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#262626" />
             <XAxis 
               dataKey="date" 
-              tick={{ fontSize: 12, fill: '#71717a' }} 
+              tick={{ fontSize: 10, fill: '#525252', fontWeight: 'bold' }} 
               tickLine={false}
               axisLine={false}
               minTickGap={30}
@@ -110,22 +110,22 @@ export function FatigueChart({ workouts, className }: FatigueChartProps) {
             <YAxis 
               yAxisId="left"
               tickFormatter={(val) => `${(val/1000).toFixed(0)}k`}
-              tick={{ fontSize: 12, fill: '#71717a' }} 
+              tick={{ fontSize: 10, fill: '#525252', fontWeight: 'bold' }} 
               tickLine={false}
               axisLine={false}
-              label={{ value: `Volume (${unitPreference})`, angle: -90, position: 'insideLeft', fill: '#3b82f6', fontSize: 10, dy: 50 }}
+              label={{ value: `VOLUME (${unitPreference})`, angle: -90, position: 'insideLeft', fill: '#525252', fontSize: 9, fontWeight: 'bold', dy: 50 }}
             />
             <YAxis 
               yAxisId="right"
               orientation="right"
               domain={[0, 10]}
-              tick={{ fontSize: 12, fill: '#71717a' }} 
+              tick={{ fontSize: 10, fill: '#525252', fontWeight: 'bold' }} 
               tickLine={false}
               axisLine={false}
-              label={{ value: 'Avg RPE', angle: 90, position: 'insideRight', fill: '#ef4444', fontSize: 10, dy: -50 }}
+              label={{ value: 'AVG RPE', angle: 90, position: 'insideRight', fill: '#525252', fontSize: 9, fontWeight: 'bold', dy: -50 }}
             />
             <Tooltip content={<CustomTooltip unit={unitPreference} />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
-            <Legend verticalAlign="top" height={36} wrapperStyle={{ paddingBottom: '20px' }} iconType="circle" />
+            <Legend verticalAlign="top" height={36} wrapperStyle={{ paddingBottom: '20px' }} iconType="rect" />
             
             <Bar 
               yAxisId="left" 
@@ -133,17 +133,17 @@ export function FatigueChart({ workouts, className }: FatigueChartProps) {
               name="Volume" 
               fill="url(#volGradient)" 
               barSize={20} 
-              radius={[4, 4, 0, 0]} 
+              radius={[2, 2, 0, 0]} 
             />
             <Line 
               yAxisId="right" 
               type="monotone" 
               dataKey="rpe" 
               name="Avg RPE" 
-              stroke="#ef4444" 
-              strokeWidth={3} 
-              dot={{ r: 4, fill: '#18181b', strokeWidth: 2, stroke: '#ef4444' }} 
-              activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
+              stroke="#737373" 
+              strokeWidth={2} 
+              dot={{ r: 3, fill: '#000000', strokeWidth: 2, stroke: '#737373' }} 
+              activeDot={{ r: 5, stroke: '#ffffff', strokeWidth: 2 }}
             />
           </ComposedChart>
         </ResponsiveContainer>

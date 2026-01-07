@@ -1,22 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  /* Default to Dark Mode "Luxury" Palette */
-  --background: #050505;
+  /* Strict Monochrome Palette */
+  --background: #000000;
   --foreground: #ffffff;
   
-  --card-bg: rgba(255, 255, 255, 0.03);
-  --card-border: rgba(255, 255, 255, 0.08);
-  --card-hover: rgba(255, 255, 255, 0.06);
+  --card-bg: #0a0a0a;
+  --card-border: #262626;
+  --card-hover: #171717;
   
   --primary: #ffffff;
   --primary-fg: #000000;
   
-  --muted: #a1a1aa;
-  --accent: #2563eb; /* Keep blue for data points, but maybe whiten it */
+  --muted: #737373;
+  --accent: #ffffff;
 }
 
-/* Force dark mode behavior even if system is light, for this specific aesthetic */
 body {
   background: var(--background);
   color: var(--foreground);
@@ -25,26 +24,21 @@ body {
 }
 
 @layer utilities {
-  .glass-card {
-    background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid var(--card-border);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  .bw-card {
+    background: #050505;
+    border: 1px solid #262626;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
   }
   
-  .glass-card-hover {
-    transition: all 0.3s ease;
-  }
-  
-  .glass-card-hover:hover {
-    background: linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
-    border-color: rgba(255, 255, 255, 0.15);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  .bw-card:hover {
+    border-color: #525252;
+    transition: border-color 0.2s ease;
   }
 
-  .text-glow {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  .bw-glass {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid #262626;
   }
 }

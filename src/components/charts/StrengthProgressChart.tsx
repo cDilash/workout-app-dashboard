@@ -36,11 +36,11 @@ interface CustomTooltipProps extends TooltipProps<ValueType, NameType> {
 const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="glass-card bg-black/80 p-4 rounded-xl border-white/10 shadow-xl backdrop-blur-md">
-        <p className="text-xs font-semibold text-gray-400 mb-2">{label}</p>
+      <div className="bg-black border border-gray-800 p-4 rounded shadow-2xl">
+        <p className="text-[10px] font-bold text-gray-500 mb-2 uppercase tracking-wider">{label}</p>
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+            <div className="w-2 h-2 rounded-full bg-white" />
             <p className="text-sm font-bold text-white">
               Est. 1RM: {payload[0].value} {unit}
             </p>
@@ -119,11 +119,11 @@ export function StrengthProgressChart({ workouts, className }: StrengthProgressC
   }
 
   return (
-    <div className={cn("glass-card rounded-3xl p-6", className)}>
+    <div className={cn("bw-card rounded-xl p-6", className)}>
       <div className="flex flex-col gap-6 mb-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-bold text-white tracking-tight">Strength Progression</h3>
+            <h3 className="text-lg font-bold text-white tracking-tight">STRENGTH PROGRESSION</h3>
             <InfoTooltip content="Estimated 1RM (Rep Max) is a theoretical calculation of the maximum weight you could lift for a single rep, based on your best performance each day." />
           </div>
           
@@ -132,28 +132,28 @@ export function StrengthProgressChart({ workouts, className }: StrengthProgressC
              <div className="relative w-full sm:w-64 z-20">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="w-full glass-card hover:bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-left text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex justify-between items-center transition-all"
+                  className="w-full bg-black border border-gray-800 hover:border-gray-600 rounded py-2 px-3 text-left text-xs font-bold uppercase text-white focus:outline-none flex justify-between items-center transition-all"
                 >
                   <span className="truncate">{selectedName}</span>
-                  <CaretDown size={14} className="text-gray-400" weight="bold" />
+                  <CaretDown size={12} className="text-gray-500" weight="bold" />
                 </button>
 
                 {isOpen && (
-                  <div className="absolute mt-2 w-full glass-card bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl max-h-60 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
-                    <div className="p-2 border-b border-white/5 sticky top-0 bg-[#0a0a0a]/50 backdrop-blur-md z-10">
+                  <div className="absolute mt-1 w-full bg-black border border-gray-800 rounded shadow-xl max-h-60 overflow-hidden flex flex-col z-50">
+                    <div className="p-2 border-b border-gray-800 sticky top-0 bg-black z-10">
                       <div className="relative">
-                        <MagnifyingGlass size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                        <MagnifyingGlass size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
                         <input
                           type="text"
-                          placeholder="Search exercise..."
+                          placeholder="SEARCH..."
                           value={searchTerm}
                           onChange={(e) => setSearch(e.target.value)}
-                          className="w-full bg-white/5 border border-white/5 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                          className="w-full bg-gray-900 border border-gray-800 rounded pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-gray-600"
                           autoFocus
                         />
                       </div>
                     </div>
-                    <div className="overflow-y-auto flex-1 p-1 custom-scrollbar">
+                    <div className="overflow-y-auto flex-1 p-1">
                       {filteredExercises.map((ex) => (
                         <button
                           key={ex.id}
@@ -163,17 +163,17 @@ export function StrengthProgressChart({ workouts, className }: StrengthProgressC
                             setSearch('');
                           }}
                           className={cn(
-                            "w-full text-left px-3 py-2 text-sm rounded-lg transition-colors",
+                            "w-full text-left px-3 py-2 text-xs font-bold uppercase rounded transition-colors",
                             ex.id === selectedExerciseId 
-                              ? "bg-blue-600/20 text-blue-400 font-medium border border-blue-500/20" 
-                              : "text-gray-400 hover:bg-white/5 hover:text-white"
+                              ? "bg-white text-black" 
+                              : "text-gray-500 hover:bg-gray-900 hover:text-white"
                           )}
                         >
                           {ex.name}
                         </button>
                       ))}
                       {filteredExercises.length === 0 && (
-                        <div className="p-4 text-xs text-gray-500 text-center">No exercises found</div>
+                        <div className="p-4 text-xs text-gray-500 text-center uppercase">No exercises found</div>
                       )}
                     </div>
                   </div>
@@ -187,43 +187,43 @@ export function StrengthProgressChart({ workouts, className }: StrengthProgressC
              <button
                onClick={() => setIsGoalOpen(!isGoalOpen)}
                className={cn(
-                 "p-2.5 rounded-xl border transition-all duration-300",
+                 "p-2 rounded border transition-all duration-200",
                  currentGoal 
-                   ? "bg-green-500/10 border-green-500/20 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.15)]" 
-                   : "glass-card hover:bg-white/5 border-white/10 text-gray-400 hover:text-white"
+                   ? "bg-white text-black border-white" 
+                   : "bg-black border-gray-800 text-gray-500 hover:text-white hover:border-gray-600"
                )}
                title="Set Goal"
              >
-               <Target size={20} weight={currentGoal ? "fill" : "regular"} />
+               <Target size={16} weight={currentGoal ? "fill" : "regular"} />
              </button>
           </div>
         </div>
 
         {/* Goal UI Panel */}
         {isGoalOpen && (
-          <div className="flex items-center gap-3 glass-card bg-white/5 p-3 rounded-xl border border-white/10 animate-in fade-in slide-in-from-top-2">
-            <span className="text-sm font-medium text-gray-300">Target 1RM:</span>
+          <div className="flex items-center gap-3 bg-gray-900 p-3 rounded border border-gray-800 animate-in fade-in slide-in-from-top-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">Target 1RM:</span>
             <div className="relative">
               <input 
                 type="number" 
                 value={goalInput}
                 onChange={(e) => setGoalInput(e.target.value)}
                 placeholder={currentGoal ? `${displayGoal}` : "100"}
-                className="w-24 px-3 py-1.5 text-sm border border-white/10 rounded-lg bg-black/50 text-white placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                className="w-24 px-3 py-1.5 text-xs border border-gray-700 rounded bg-black text-white placeholder:text-gray-700 focus:outline-none focus:border-white"
               />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">{unitPreference}</span>
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 pointer-events-none">{unitPreference}</span>
             </div>
             
             <button 
               onClick={handleSaveGoal}
-              className="ml-auto px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-500 shadow-lg shadow-blue-900/20 transition-all"
+              className="ml-auto px-4 py-1.5 bg-white text-black text-xs font-bold rounded hover:bg-gray-200 transition-all uppercase"
             >
               Save
             </button>
             {currentGoal && (
               <button 
                 onClick={() => removeGoal(selectedExerciseId)}
-                className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                className="p-1.5 text-gray-500 hover:text-white transition-colors"
               >
                 <Trash size={16} />
               </button>
@@ -234,13 +234,13 @@ export function StrengthProgressChart({ workouts, className }: StrengthProgressC
         {/* Goal Progress Bar */}
         {currentGoal && displayGoal && (
           <div className="w-full">
-            <div className="flex justify-between text-xs mb-2 px-1">
+            <div className="flex justify-between text-[10px] font-bold uppercase mb-2 px-1">
               <span className="text-gray-500">Current Max: <strong className="text-white">{currentMax} {unitPreference}</strong></span>
-              <span className="text-blue-400 font-bold shadow-blue-500/50 drop-shadow-sm">{progressPercent.toFixed(0)}% to {displayGoal} {unitPreference}</span>
+              <span className="text-white">{progressPercent.toFixed(0)}% to {displayGoal} {unitPreference}</span>
             </div>
-            <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+            <div className="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
               <div 
-                className="bg-gradient-to-r from-blue-600 to-blue-400 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
+                className="bg-white h-full rounded-full transition-all duration-1000 ease-out" 
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -250,8 +250,8 @@ export function StrengthProgressChart({ workouts, className }: StrengthProgressC
 
       <div className="h-[350px] w-full">
         {data.length < 2 ? (
-          <div className="flex items-center justify-center h-full text-gray-600 border border-dashed border-white/10 rounded-2xl bg-white/5">
-            Not enough history for this exercise (need at least 2 sessions)
+          <div className="flex items-center justify-center h-full text-gray-600 border border-dashed border-gray-800 rounded bg-gray-900/50 uppercase text-xs font-bold tracking-widest">
+            Not enough history
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
@@ -261,14 +261,14 @@ export function StrengthProgressChart({ workouts, className }: StrengthProgressC
             >
               <defs>
                 <linearGradient id="colorE1rm" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#ffffff" stopOpacity={0.1}/>
+                  <stop offset="95%" stopColor="#ffffff" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#262626" />
               <XAxis 
                 dataKey="date" 
-                tick={{ fontSize: 12, fill: '#71717a' }} 
+                tick={{ fontSize: 10, fill: '#525252', fontWeight: 'bold' }} 
                 tickLine={false}
                 axisLine={false}
                 tickMargin={15}
@@ -279,27 +279,27 @@ export function StrengthProgressChart({ workouts, className }: StrengthProgressC
                   (dataMin: number) => Math.floor(dataMin - 5),
                   (dataMax: number) => displayGoal ? Math.max(dataMax, displayGoal * 1.1) : 'auto'
                 ]}
-                tick={{ fontSize: 12, fill: '#71717a' }} 
+                tick={{ fontSize: 10, fill: '#525252', fontWeight: 'bold' }} 
                 tickLine={false}
                 axisLine={false}
               />
-              <Tooltip content={<CustomTooltip unit={unitPreference} />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
-              <Legend verticalAlign="top" height={36} iconType="circle" />
+              <Tooltip content={<CustomTooltip unit={unitPreference} />} cursor={{ stroke: '#525252', strokeWidth: 1 }} />
+              <Legend verticalAlign="top" height={36} iconType="rect" />
               {displayGoal && (
-                <ReferenceLine y={displayGoal} stroke="#10b981" strokeDasharray="3 3" strokeOpacity={0.5}>
-                  <Label value="Goal" position="insideTopLeft" fill="#10b981" fontSize={10} offset={10} />
+                <ReferenceLine y={displayGoal} stroke="#525252" strokeDasharray="3 3">
+                  <Label value="GOAL" position="insideTopLeft" fill="#525252" fontSize={10} fontWeight="bold" offset={10} />
                 </ReferenceLine>
               )}
               <Area
                 name="Estimated 1RM"
                 type="monotone"
                 dataKey="e1rm"
-                stroke="#3b82f6"
-                strokeWidth={3}
+                stroke="#ffffff"
+                strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorE1rm)"
-                dot={{ fill: '#18181b', strokeWidth: 2, stroke: '#3b82f6', r: 4 }}
-                activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
+                dot={{ fill: '#000000', strokeWidth: 2, stroke: '#ffffff', r: 3 }}
+                activeDot={{ r: 5, stroke: '#ffffff', strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>
