@@ -25,6 +25,7 @@ import {
   Fire,
   ArrowsLeftRight
 } from 'phosphor-react';
+import { cn } from '@/lib/utils';
 
 export default function Home() {
   const data = useDashboardStore((state) => state.data);
@@ -36,85 +37,97 @@ export default function Home() {
 
   if (!data || !stats) {
     return (
-      <main className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center p-4">
+      <main className="min-h-screen flex flex-col items-center justify-center p-4">
+        {/* Background Gradients */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px]" />
+        </div>
         <DataImport />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-              <Barbell size={20} weight="bold" />
+    <main className="min-h-screen relative">
+       {/* Background Gradients */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-600/5 rounded-full blur-[150px]" />
+        <div className="absolute top-[20%] right-[-10%] w-[40%] h-[40%] bg-purple-600/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[-10%] left-[20%] w-[30%] h-[30%] bg-emerald-600/5 rounded-full blur-[150px]" />
+      </div>
+
+      <header className="sticky top-4 z-50 px-4 sm:px-6 lg:px-8 mb-8">
+        <div className="max-w-7xl mx-auto glass-card rounded-2xl px-6 h-16 flex items-center justify-between shadow-2xl shadow-black/20">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-blue-400 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-900/20">
+              <Barbell size={20} weight="fill" />
             </div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Workout Dashboard</h1>
+            <h1 className="text-lg font-bold text-white tracking-wide">Workout<span className="text-gray-500 font-light">Analytics</span></h1>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setUnitPreference(unitPreference === 'kg' ? 'lbs' : 'kg')}
-              className="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center text-xs font-bold text-gray-300 bg-white/5 hover:bg-white/10 border border-white/5 px-4 py-2 rounded-lg transition-all uppercase tracking-wider"
             >
-              <ArrowsLeftRight size={16} className="mr-2" />
-              {unitPreference.toUpperCase()}
+              <ArrowsLeftRight size={14} className="mr-2 text-blue-400" />
+              {unitPreference}
             </button>
             
             <button 
               onClick={clearData}
-              className="flex items-center text-sm text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-md transition-colors"
+              className="flex items-center text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 px-4 py-2 rounded-lg transition-colors border border-transparent hover:border-red-500/20"
             >
-              <Trash size={16} className="mr-1.5" />
-              Clear Data
+              <Trash size={14} className="mr-2" />
+              Reset
             </button>
           </div>
         </div>
       </header>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {/* Coaching Report */}
-        <div className="mb-8">
+        <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <CoachingReport workouts={data.workouts} />
         </div>
 
         {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
           <StatCard 
             title="Total Workouts" 
             value={stats.totalWorkouts} 
             icon={CalendarCheck}
             tooltip="The total number of training sessions completed in the history of your data."
-            colorClassName="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+            colorClassName="bg-blue-500/10 text-blue-400"
           />
           <StatCard 
             title="Total Volume" 
             value={`${(formatWeight(stats.totalVolume, unitPreference) / 1000).toFixed(1)}k`} 
             icon={TrendUp}
             tooltip="Cumulative workload calculated as (Sets × Reps × Weight). A measure of total training stress."
-            description={`${unitPreference} (total weight lifted)`}
-            colorClassName="bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400"
+            description={`${unitPreference} total load`}
+            colorClassName="bg-green-500/10 text-green-400"
           />
           <StatCard 
             title="Most Frequent" 
             value={stats.frequentMuscleGroup} 
             icon={Barbell}
             tooltip="The muscle group that has received the highest number of working sets."
-            description="Focus muscle group"
-            colorClassName="bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"
+            description="Focus muscle"
+            colorClassName="bg-purple-500/10 text-purple-400"
           />
           <StatCard 
-            title="Frequency" 
+            title="Consistency" 
             value={`${stats.workoutsPerWeek}`} 
             icon={Fire}
             tooltip="Your average workout consistency, measured as sessions per week since your first logged lift."
-            description="Workouts per week"
-            colorClassName="bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400"
+            description="Workouts / week"
+            colorClassName="bg-orange-500/10 text-orange-400"
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
           {/* Heatmap Section */}
           <div className="lg:col-span-2">
             <WorkoutHeatmap workouts={data.workouts} />
@@ -127,30 +140,30 @@ export default function Home() {
         </div>
 
         {/* Advanced Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
           <VolumeChart workouts={data.workouts} />
           <MuscleDistributionChart workouts={data.workouts} />
         </div>
 
         {/* Analytics Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
           <IntensityChart workouts={data.workouts} />
           <RepRangeChart workouts={data.workouts} />
         </div>
 
         {/* Program Balance & Fatigue */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
           <ProgramBalanceChart workouts={data.workouts} />
           <FatigueChart workouts={data.workouts} />
         </div>
 
         {/* Strength Progression */}
-        <div className="mb-8">
+        <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
           <StrengthProgressChart workouts={data.workouts} />
         </div>
 
         {/* Data Products */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700">
           <YearInLift workouts={data.workouts} />
           <ExportCenter />
         </div>

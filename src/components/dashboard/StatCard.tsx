@@ -9,7 +9,7 @@ interface StatCardProps {
   value: string | number;
   icon: React.ForwardRefExoticComponent<IconProps & React.RefAttributes<SVGSVGElement>>;
   description?: string;
-  tooltip?: string; // New field for info icon
+  tooltip?: string;
   className?: string;
   colorClassName?: string;
 }
@@ -18,34 +18,38 @@ export function StatCard({ title, value, icon: Icon, description, tooltip, class
   const [showTooltip, setShowTooltip] = useState(false);
 
   return (
-    <div className={cn("bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 shadow-sm relative", className)}>
-      <div className="flex items-start justify-between">
+    <div className={cn("glass-card glass-card-hover rounded-3xl p-6 relative overflow-hidden", className)}>
+      {/* Decorative Gradient Blob */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+      
+      <div className="flex items-start justify-between relative z-10">
         <div>
-          <div className="flex items-center gap-1.5 mb-1">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+          <div className="flex items-center gap-2 mb-2">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-400">{title}</p>
             {tooltip && (
               <div 
                 className="relative cursor-help group"
                 onMouseEnter={() => setShowTooltip(true)}
                 onMouseLeave={() => setShowTooltip(false)}
               >
-                <Info size={14} className="text-gray-400 hover:text-blue-500 transition-colors" />
+                <Info size={14} weight="bold" className="text-gray-500 hover:text-white transition-colors" />
                 {showTooltip && (
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded shadow-xl z-50 pointer-events-none border border-gray-700">
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 glass-card bg-black/80 text-white text-[10px] rounded-xl shadow-xl z-50 pointer-events-none">
                     {tooltip}
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900" />
                   </div>
                 )}
               </div>
             )}
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</h3>
+          <h3 className="text-3xl font-bold text-white tracking-tight">{value}</h3>
           {description && (
-            <p className="text-xs text-gray-400 mt-1">{description}</p>
+            <p className="text-xs text-gray-500 mt-1 font-medium">{description}</p>
           )}
         </div>
-        <div className={cn("p-2 rounded-lg", colorClassName || "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400")}>
-          <Icon size={24} weight="duotone" />
+        
+        {/* Minimalist Icon */}
+        <div className={cn("p-3 rounded-2xl glass-card border-0 bg-white/5 text-white")}>
+          <Icon size={24} weight="fill" className="opacity-80" />
         </div>
       </div>
     </div>
