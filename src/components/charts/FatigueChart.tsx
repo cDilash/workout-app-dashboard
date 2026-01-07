@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { TooltipProps } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { useDashboardStore } from '@/stores/dashboard-store';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 
 interface FatigueChartProps {
   workouts: Workout[];
@@ -78,7 +79,10 @@ export function FatigueChart({ workouts, className }: FatigueChartProps) {
 
   return (
     <div className={cn("bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm", className)}>
-      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Fatigue Management (Vol vs RPE)</h3>
+      <div className="flex items-center gap-1.5 mb-6">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Fatigue Management</h3>
+        <InfoTooltip content="Compares weekly Volume (Training Stress) with Average RPE (Strain). If RPE rises while Volume falls, you may be overreaching." />
+      </div>
       <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>

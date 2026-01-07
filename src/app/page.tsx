@@ -85,12 +85,14 @@ export default function Home() {
             title="Total Workouts" 
             value={stats.totalWorkouts} 
             icon={CalendarCheck}
+            tooltip="The total number of training sessions completed in the history of your data."
             colorClassName="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
           />
           <StatCard 
             title="Total Volume" 
             value={`${(formatWeight(stats.totalVolume, unitPreference) / 1000).toFixed(1)}k`} 
             icon={TrendUp}
+            tooltip="Cumulative workload calculated as (Sets × Reps × Weight). A measure of total training stress."
             description={`${unitPreference} (total weight lifted)`}
             colorClassName="bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400"
           />
@@ -98,6 +100,7 @@ export default function Home() {
             title="Most Frequent" 
             value={stats.frequentMuscleGroup} 
             icon={Barbell}
+            tooltip="The muscle group that has received the highest number of working sets."
             description="Focus muscle group"
             colorClassName="bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"
           />
@@ -105,6 +108,7 @@ export default function Home() {
             title="Frequency" 
             value={`${stats.workoutsPerWeek}`} 
             icon={Fire}
+            tooltip="Your average workout consistency, measured as sessions per week since your first logged lift."
             description="Workouts per week"
             colorClassName="bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400"
           />

@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { TooltipProps } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { useDashboardStore } from '@/stores/dashboard-store';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 
 interface StrengthProgressChartProps {
   workouts: Workout[];
@@ -82,7 +83,10 @@ export function StrengthProgressChart({ workouts, className }: StrengthProgressC
   return (
     <div className={cn("bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm", className)}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Strength Progression ({unitPreference})</h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Strength Progression</h3>
+          <InfoTooltip content="Estimated 1RM (Rep Max) is a theoretical calculation of the maximum weight you could lift for a single rep, based on your best performance each day." />
+        </div>
         <select
           value={selectedExerciseId}
           onChange={(e) => setSelectedExerciseId(e.target.value)}

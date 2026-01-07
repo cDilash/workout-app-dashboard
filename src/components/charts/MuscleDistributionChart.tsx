@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { TooltipProps } from 'recharts';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { useDashboardStore } from '@/stores/dashboard-store';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 
 interface MuscleDistributionChartProps {
   workouts: Workout[];
@@ -43,7 +44,7 @@ const CustomTooltip = ({ active, payload, unit }: CustomTooltipProps) => {
 
 export function MuscleDistributionChart({ workouts, className }: MuscleDistributionChartProps) {
   const unitPreference = useDashboardStore((state) => state.unitPreference);
-  const rawData = getMuscleDistribution(workouts);
+  const rawData = useMemo(() => getMuscleDistribution(workouts), [workouts]);
 
   const data = useMemo(() => {
     return rawData.map(d => ({
@@ -64,7 +65,10 @@ export function MuscleDistributionChart({ workouts, className }: MuscleDistribut
 
   return (
     <div className={cn("bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm", className)}>
-      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Muscle Split ({unitPreference})</h3>
+      <div className="flex items-center gap-1.5 mb-6">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Muscle Split ({unitPreference})</h3>
+        <InfoTooltip content="A radar visualization showing the relative focus on each muscle group. A balanced shape indicates a well-rounded program." />
+      </div>
       <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
