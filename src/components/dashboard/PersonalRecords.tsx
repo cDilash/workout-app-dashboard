@@ -37,8 +37,8 @@ export function PersonalRecords({ workouts, className }: PersonalRecordsProps) {
   if (records.length === 0) return null;
 
   return (
-    <div className={cn("bw-card rounded-xl flex flex-col", className)}>
-      <div className="p-6 border-b border-gray-800 flex items-center justify-between">
+    <div className={cn("bw-card rounded-xl flex flex-col max-h-[480px]", className)}>
+      <div className="p-6 border-b border-gray-800 flex items-center justify-between sticky top-0 bg-black z-10 rounded-t-xl">
         <h3 className="text-lg font-bold text-white flex items-center gap-2 uppercase tracking-tight">
           <Trophy size={20} className="text-white" weight="fill" />
           Personal Records
