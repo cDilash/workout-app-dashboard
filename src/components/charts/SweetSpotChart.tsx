@@ -10,8 +10,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceArea,
-  Brush
+  ReferenceArea
 } from 'recharts';
 import { Workout } from '@/lib/types';
 import { getSweetSpotData, formatWeight } from '@/lib/stats';
@@ -83,10 +82,10 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
   }
 
   return (
-    <div className={cn("bw-card rounded-xl p-6 flex flex-col h-[520px]", className)}>
+    <div className={cn("bw-card rounded-xl p-6 flex flex-col h-[480px]", className)}>
       <div className="flex items-center gap-2 mb-8">
         <h3 className="text-lg font-bold text-white uppercase tracking-tight">Growth Zone (Vol vs RPE)</h3>
-        <InfoTooltip content="Each dot is a workout. Use the slider at the bottom to zoom. Overlapping points are slightly jittered." />
+        <InfoTooltip content="Each dot is a workout. High volume at high intensity (RPE 7-9) is the primary driver of growth." />
       </div>
 
       <div className="flex-1 w-full">
@@ -98,8 +97,6 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
               dataKey="volume" 
               name="Volume" 
               unit={unitPreference} 
-              domain={['auto', 'auto']}
-              allowDataOverflow
               tick={{ fontSize: 10, fill: '#71717a', fontWeight: 'bold' }}
               tickLine={false}
               axisLine={false}
@@ -129,22 +126,14 @@ export function SweetSpotChart({ workouts, className }: SweetSpotChartProps) {
               shape="circle"
               className="drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] hover:fill-opacity-100 transition-all duration-300"
             />
-            <Brush 
-              dataKey="volume" 
-              height={30} 
-              stroke="#525252" 
-              fill="#000000"
-              travellerWidth={10}
-              gap={1}
-            />
           </ScatterChart>
         </ResponsiveContainer>
       </div>
 
       <div className="mt-8 flex items-center justify-between text-[9px] font-bold text-gray-600 uppercase tracking-widest border-t border-gray-900 pt-6">
         <div className="flex gap-4">
-          <span className="text-gray-300">Scatter Plot Mode</span>
-          <span>Slide to Zoom</span>
+          <span className="text-gray-300">Intensity Plot</span>
+          <span>Session Correlation</span>
         </div>
         <div className="text-right">
           <span>{data.length} Total Sessions</span>
