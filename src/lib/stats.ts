@@ -247,6 +247,49 @@ export function getRepRangeDistribution(workouts: Workout[]) {
   return Object.entries(ranges).map(([name, value]) => ({ name, value }));
 }
 
+export interface PerformanceInsight {
+  id: string;
+  name: string;
+  change: number;
+  lastPerformed: string;
+  status: 'trending' | 'stalled';
+}
+
+export function getPerformancePulse(workouts: Workout[]): PerformanceInsight[] {
+  const exercises = getAvailableExercises(workouts);
+  const insights: PerformanceInsight[] = [];
+  const now = new Date();
+  const threeWeeksAgo = new Date(now.getTime() - (21 * 24 * 60 * 60 * 1000));
+  const fourWeeksAgo = new Date(now.getTime() - (28 * 24 * 60 * 60 * 1000));
+
+  exercises.forEach(ex => {
+    const history = getExerciseHistory(workouts, ex.id);
+    if (history.length < 3) return; // Need some history to determine a trend
+
+    const recent = history.filter(h => new Date(h.date) >= threeWeeksAgo);
+    const older = history.filter(h => new Date(h.date) < threeWeeksAgo && new Date(h.date) >= new Date(now.getTime() - (60 * 24 * 60 * 60 * 1000)));
+
+    if (recent.length === 0) return;
+
+    const recentMax = Math.max(...recent.map(r => r.e1rm));
+    const olderMax = older.length > 0 ? Math.max(...older.map(o => o.e1rm)) : history[0].e1rm;
+    
+    const percentChange = ((recentMax - olderMax) / olderMax) * 100;
+    const lastDate = history[history.length - 1].date;
+
+    // Trending Up: > 5% increase in recent weeks
+    if (percentChange >= 5) {
+      insights.push({ id: ex.id, name: ex.name, change: percentChange, lastPerformed: lastDate, status: 'trending' });
+    } 
+    // Stalled: Performed recently but no growth (< 1%) in last 4 weeks
+    else if (new Date(lastDate) >= fourWeeksAgo && percentChange < 1) {
+      insights.push({ id: ex.id, name: ex.name, change: percentChange, lastPerformed: lastDate, status: 'stalled' });
+    }
+  });
+
+  return insights.sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
+}
+
 export function getWeeklyHardSets(workouts: Workout[]) {
   const weekly: Record<string, { hardSets: number }> = {};
   workouts.forEach(w => {

@@ -14,6 +14,7 @@ import { ProgramBalanceChart } from '@/components/charts/ProgramBalanceChart';
 import { FatigueChart } from '@/components/charts/FatigueChart';
 import { SweetSpotChart } from '@/components/charts/SweetSpotChart';
 import { PersonalRecords } from '@/components/dashboard/PersonalRecords';
+import { PerformancePulse } from '@/components/dashboard/PerformancePulse';
 import { CoachingReport } from '@/components/dashboard/CoachingReport';
 import { YearInLift } from '@/components/dashboard/YearInLift';
 import { ExportCenter } from '@/components/dashboard/ExportCenter';
@@ -80,6 +81,16 @@ export default function Home() {
           <CoachingReport workouts={data.workouts} />
         </div>
 
+        {/* Intelligence Pulse & Calendar */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+          <div className="lg:col-span-2">
+            <PerformancePulse workouts={data.workouts} />
+          </div>
+          <div className="lg:col-span-1">
+            <WorkoutHeatmap workouts={data.workouts} />
+          </div>
+        </div>
+
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard 
@@ -113,7 +124,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
           <div className="lg:col-span-2">
-            <WorkoutHeatmap workouts={data.workouts} />
+            <SweetSpotChart workouts={data.workouts} />
           </div>
           <div className="lg:col-span-1">
             <PersonalRecords workouts={data.workouts} className="h-full" />
@@ -130,17 +141,8 @@ export default function Home() {
           <RepRangeChart workouts={data.workouts} />
         </div>
 
-        {/* Growth Zone Analysis */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-          <div className="lg:col-span-2">
-            <SweetSpotChart workouts={data.workouts} />
-          </div>
-          <div className="lg:col-span-1">
-            <ProgramBalanceChart workouts={data.workouts} />
-          </div>
-        </div>
-
-        <div className="mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+          <ProgramBalanceChart workouts={data.workouts} />
           <FatigueChart workouts={data.workouts} />
         </div>
 
