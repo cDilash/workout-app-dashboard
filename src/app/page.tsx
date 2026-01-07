@@ -12,6 +12,7 @@ import { RepRangeChart } from '@/components/charts/RepRangeChart';
 import { IntensityChart } from '@/components/charts/IntensityChart';
 import { ProgramBalanceChart } from '@/components/charts/ProgramBalanceChart';
 import { FatigueChart } from '@/components/charts/FatigueChart';
+import { SweetSpotChart } from '@/components/charts/SweetSpotChart';
 import { PersonalRecords } from '@/components/dashboard/PersonalRecords';
 import { CoachingReport } from '@/components/dashboard/CoachingReport';
 import { YearInLift } from '@/components/dashboard/YearInLift';
@@ -25,7 +26,6 @@ import {
   Fire,
   ArrowsLeftRight
 } from 'phosphor-react';
-import { cn } from '@/lib/utils';
 
 export default function Home() {
   const data = useDashboardStore((state) => state.data);
@@ -112,41 +112,42 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-          {/* Heatmap Section */}
           <div className="lg:col-span-2">
             <WorkoutHeatmap workouts={data.workouts} />
           </div>
-
-          {/* Personal Records */}
           <div className="lg:col-span-1">
             <PersonalRecords workouts={data.workouts} className="h-full" />
           </div>
         </div>
 
-        {/* Advanced Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
           <VolumeChart workouts={data.workouts} />
           <MuscleDistributionChart workouts={data.workouts} />
         </div>
 
-        {/* Analytics Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
           <IntensityChart workouts={data.workouts} />
           <RepRangeChart workouts={data.workouts} />
         </div>
 
-        {/* Program Balance & Fatigue */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-          <ProgramBalanceChart workouts={data.workouts} />
+        {/* Growth Zone Analysis */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+          <div className="lg:col-span-2">
+            <SweetSpotChart workouts={data.workouts} />
+          </div>
+          <div className="lg:col-span-1">
+            <ProgramBalanceChart workouts={data.workouts} />
+          </div>
+        </div>
+
+        <div className="mb-8">
           <FatigueChart workouts={data.workouts} />
         </div>
 
-        {/* Strength Progression */}
         <div className="mb-8">
           <StrengthProgressChart workouts={data.workouts} />
         </div>
 
-        {/* Data Products */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
           <YearInLift workouts={data.workouts} />
           <ExportCenter />
