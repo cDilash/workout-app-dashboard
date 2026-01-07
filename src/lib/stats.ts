@@ -305,13 +305,70 @@ export function getWeeklyHardSets(workouts: Workout[]) {
   return Object.entries(weekly).map(([date, counts]) => ({ date, ...counts })).sort((a,b)=>a.date.localeCompare(b.date));
 }
 
-export function getSweetSpotData(workouts: Workout[]) {
-  return workouts.map(w => {
+export function getGrowthZoneHeatmap(workouts: Workout[]) {
+
+  // Volume Buckets: 0-5k, 5k-10k, 10k-15k, 15k-20k, 20k+
+
+  // RPE Buckets: 1-4, 5-7, 8-10
+
+  const heatmap: Record<string, number> = {};
+
+
+
+  workouts.forEach(w => {
+
     let vol = 0, rpeSum = 0, rpeCount = 0;
-    w.exercises.forEach(ex => getValidSets(ex.sets).forEach(s => {
+
+    getValidSets(w.exercises.flatMap(e => e.sets)).forEach(s => {
+
       vol += s.weight_kg * s.reps;
+
       if (s.rpe) { rpeSum += s.rpe; rpeCount++; }
-    }));
-    return { volume: vol, rpe: rpeCount > 0 ? parseFloat((rpeSum / rpeCount).toFixed(1)) : 0, date: new Date(w.metadata.date).toISOString().split('T')[0] };
-  }).filter(d => d.volume > 0 && d.rpe > 0);
+
+    });
+
+
+
+    if (vol > 0 && rpeCount > 0) {
+
+      const avgRpe = rpeSum / rpeCount;
+
+      
+
+      // Determine Volume Bucket
+
+      let volBucket = '0-5k';
+
+      if (vol > 20000) volBucket = '20k+';
+
+      else if (vol > 15000) volBucket = '15-20k';
+
+      else if (vol > 10000) volBucket = '10-15k';
+
+      else if (vol > 5000) volBucket = '5-10k';
+
+
+
+      // Determine RPE Bucket
+
+      let rpeBucket = '1-4';
+
+      if (avgRpe >= 8) rpeBucket = '8-10';
+
+      else if (avgRpe >= 5) rpeBucket = '5-7';
+
+
+
+      const key = `${volBucket}|${rpeBucket}`;
+
+      heatmap[key] = (heatmap[key] || 0) + 1;
+
+    }
+
+  });
+
+
+
+  return heatmap;
+
 }
